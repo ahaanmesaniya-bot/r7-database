@@ -4,15 +4,5 @@
     "gradient": "linear-gradient(135deg, #0984e3 0%, #00cec9 100%)"
   },
   "privacy_policy": "Welcome to R7 Game Zone. We respect your privacy and do not collect any personal data.",
-  "items": [
-    {
-      "id": "game_fruit_ninja",
-      "title": "Fruit Ninja",
-      "logo": "https://files.catbox.moe/m0pzud.jpeg",
-      "type": "Game",
-      "url": "https://peppy-klepon-d5ed3a.netlify.app",
-      "openDirect": false
-    }
-  ]
+  "items": []
 }
-
