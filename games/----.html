@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="gu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Premium Carrom Master - Betting Edition</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #0b0214;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            overflow: hidden;
+            user-select: none;
+        }
+        #game-container {
+            width: auto;
+            height: 98vh;
+            aspect-ratio: 1000 / 2000;
+            max-width: 100%;
+            background: #0f011a;
+            box-shadow: 0 0 50px rgba(0,0,0,0.9);
+            position: relative;
+        }
+        svg {
+            width: 100%;
+            height: 100%;
+        }
+        #slider-handle, #board-striker {
+            cursor: grab;
+        }
+        #slider-handle:active, #board-striker:active {
+            cursor: grabbing;
+        }
+
+        /* 🏆 UI Screens Overlay System */
+        .ui-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 1, 26, 0.95);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+            color: white;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        .hidden {
+            display: none !important;
+        }
+        .menu-btn {
+            background: linear-gradient(135deg, #f1c40f, #b7860b);
+            border: none;
+            color: #000;
+            padding: 15px 40px;
+            font-size: 22px;
+            font-weight: bold;
+            border-radius: 30px;
+            margin: 15px;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(241, 196, 15, 0.4);
+            width: 280px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .menu-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 25px rgba(241, 196, 15, 0.6);
+        }
+        .menu-btn:disabled {
+            background: #555;
+            color: #aaa;
+            box-shadow: none;
+            cursor: not-allowed;
+        }
+        .wallet-display {
+            font-size: 24px;
+            color: #2ecc71;
+            font-weight: bold;
+            margin-bottom: 30px;
+            background: rgba(46, 204, 113, 0.1);
+            padding: 10px 25px;
+            border-radius: 20px;
+            border: 1px solid rgba(46, 204, 113, 0.3);
+        }
+        .bet-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        h1 {
+            font-size: 42px;
+            background: linear-gradient(135deg, #fff, #f1c40f);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 5px;
+            letter-spacing: 2px;
+        }
+        p.subtitle {
+            color: #aaa;
+            font-size: 16px;
+            margin-bottom: 40px;
+        }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    
+    <div id="home-screen" class="ui-screen">
+        <h1>CARROM MASTER</h1>
+        <p class="subtitle">PREMIUM REALISTIC EDITION</p>
+        <div class="wallet-display">તમારું બેલેન્સ: ₹<span id="wallet-balance-home">5000</span></div>
+        <button class="menu-btn" onclick="selectMode('pvp')">👥 પ્લેયર Vs પ્લેયર</button>
+        <button class="menu-btn" onclick="selectMode('ai')">🤖 પ્લેયર Vs રોબોટ (AI)</button>
+    </div>
+
+    <div id="bet-screen" class="ui-screen hidden">
+        <h1>મેચ ફી પસંદ કરો</h1>
+        <p class="subtitle">જીતવા પર ડબલ કેશ પ્રાઈઝ મળશે!</p>
+        <div class="wallet-display">તમારું બેલેન્સ: ₹<span id="wallet-balance-bet">5000</span></div>
+        <div class="bet-grid">
+            <button id="btn-bet-1000" class="menu-btn" onclick="startMatch(1000)">🎮 ₹1000 વાળી ગેમ</button>
+            <button id="btn-bet-2000" class="menu-btn" onclick="startMatch(2000)">🔥 ₹2000 વાળી ગેમ</button>
+            <button id="btn-bet-5000" class="menu-btn" onclick="startMatch(5000)">👑 ₹5000 વાળી ગેમ</button>
+        </div>
+        <button class="menu-btn" style="background: #333; color: #fff; margin-top: 30px; width: 180px; font-size: 16px;" onclick="backToHome()">પાછા જાઓ</button>
+    </div>
+
+    <div id="game-over-screen" class="ui-screen hidden">
+        <h1 id="winner-title">JESSICA WON!</h1>
+        <p id="prize-status" style="font-size: 24px; color: #2ecc71; margin: 20px 0; font-weight: bold;"></p>
+        <div class="wallet-display">નવું બેલેન્સ: ₹<span id="wallet-balance-over">5000</span></div>
+        <button class="menu-btn" onclick="backToHome()">મુખ્ય મેનુ</button>
+    </div>
+
+    <svg id="carrom-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 2000" width="100%" height="100%">
+      <defs>
+        <radialGradient id="bg-glow" cx="50%" cy="45%" r="65%">
+          <stop offset="0%" stop-color="#511475" />
+          <stop offset="60%" stop-color="#26043b" />
+          <stop offset="100%" stop-color="#0f011a" />
+        </radialGradient>
+
+        <linearGradient id="wood-base" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#f5cc96" />
+          <stop offset="50%" stop-color="#e3b274" />
+          <stop offset="100%" stop-color="#c49354" />
+        </linearGradient>
+
+        <linearGradient id="board-frame" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stop-color="#421a07" />
+          <stop offset="100%" stop-color="#1f0b02" />
+        </linearGradient>
+
+        <linearGradient id="gold-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#fff2a3" />
+          <stop offset="50%" stop-color="#f1c40f" />
+          <stop offset="100%" stop-color="#b7860b" />
+        </linearGradient>
+
+        <radialGradient id="white-coin" cx="35%" cy="35%" r="70%">
+          <stop offset="0%" stop-color="#ffffff" />
+          <stop offset="70%" stop-color="#e0dacb" />
+          <stop offset="100%" stop-color="#9c9380" />
+        </radialGradient>
+
+        <radialGradient id="black-coin" cx="35%" cy="35%" r="70%">
+          <stop offset="0%" stop-color="#555555" />
+          <stop offset="60%" stop-color="#222222" />
+          <stop offset="100%" stop-color="#050505" />
+        </radialGradient>
+
+        <radialGradient id="queen-coin" cx="35%" cy="35%" r="70%">
+          <stop offset="0%" stop-color="#ff5252" />
+          <stop offset="70%" stop-color="#d32f2f" />
+          <stop offset="100%" stop-color="#7b0000" />
+        </radialGradient>
+
+        <radialGradient id="striker-grad" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stop-color="#ff3333" />
+          <stop offset="75%" stop-color="#b30000" />
+          <stop offset="100%" stop-color="#660000" />
+        </radialGradient>
+
+        <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+          <feGaussianBlur stdDeviation="10" result="blur" />
+          <feComposite in="SourceGraphic" in2="blur" operator="over" />
+        </filter>
+      </defs>
+
+      <rect width="1000" height="2000" fill="url(#bg-glow)" />
+
+      <g transform="translate(40, 40)">
+         <rect width="920" height="50" rx="10" fill="rgba(0,0,0,0.4)" stroke="url(#gold-grad)" stroke-width="1"/>
+         <text id="live-bet-txt" x="20" y="33" font-family="Arial" font-size="22" fill="#f1c40f" font-weight="bold">બેટ: ₹0</text>
+         <text id="live-wallet-txt" x="900" y="33" font-family="Arial" font-size="22" fill="#2ecc71" font-weight="bold" text-anchor="end">વોલેટ: ₹5000</text>
+         <text x="500" y="33" font-family="Arial" font-size="20" fill="#fff" text-anchor="middle" opacity="0.8">ટાર્ગેટ: 120 પોઇન્ટ્સ</text>
+      </g>
+
+      <g transform="translate(40, 120)">
+        <rect width="170" height="170" rx="30" fill="#333" stroke="url(#gold-grad)" stroke-width="5" filter="url(#glow)"/>
+        <circle cx="85" cy="85" r="65" fill="#fca1a1" />
+        <path d="M45,140 Q85,100 125,140" fill="#cc5c5c"/>
+        <circle cx="85" cy="75" r="25" fill="#cc5c5c"/>
+        <text x="200" y="60" font-family="Arial, sans-serif" font-size="36" font-weight="bold" fill="#FFF">Jessica</text>
+        <text id="p1-score" x="20" y="260" font-family="Arial, sans-serif" font-size="70" font-weight="bold" fill="#FFF">0</text>
+        <text x="130" y="250" font-family="Arial, sans-serif" font-size="24" fill="#aaa">/120</text>
+      </g>
+
+      <g transform="translate(500, 160)" text-anchor="middle">
+        <ellipse cx="0" cy="110" rx="45" ry="18" fill="url(#gold-grad)" stroke="#fff" stroke-width="1"/>
+        <ellipse cx="-30" cy="130" rx="45" ry="18" fill="url(#gold-grad)" stroke="#fff" stroke-width="1"/>
+        <ellipse cx="30" cy="125" rx="45" ry="18" fill="url(#gold-grad)" stroke="#fff" stroke-width="1"/>
+        <text id="turn-status" x="0" y="210" font-family="Arial, sans-serif" font-size="40" font-weight="bold" fill="#FFF" letter-spacing="2">JESSICA'S TURN</text>
+      </g>
+
+      <g transform="translate(790, 120)">
+        <rect width="170" height="170" rx="30" fill="#333" stroke="#999" stroke-width="4"/>
+        <circle cx="85" cy="85" r="65" fill="#a1c4fc" />
+        <path d="M45,140 Q85,100 125,140" fill="#4a7bc7"/>
+        <circle cx="85" cy="75" r="25" fill="#4a7bc7"/>
+        <text id="p2-name" x="-30" y="60" font-family="Arial, sans-serif" font-size="36" font-weight="bold" fill="#FFF" text-anchor="end">John</text>
+        <text id="p2-score" x="150" y="260" font-family="Arial, sans-serif" font-size="70" font-weight="bold" fill="#FFF" text-anchor="end">0</text>
+        <text x="-10" y="250" font-family="Arial, sans-serif" font-size="24" fill="#aaa" text-anchor="end">/120</text>
+      </g>
+
+      <g id="board-group" transform="translate(15, 450)">
+        <rect width="970" height="970" rx="60" fill="url(#board-frame)" stroke="#111" stroke-width="10" />
+        <rect x="25" y="25" width="920" height="920" rx="45" fill="none" stroke="url(#gold-grad)" stroke-width="8" opacity="0.8" />
+        <rect x="40" y="40" width="890" height="890" rx="25" fill="url(#wood-base)" />
+
+        <circle cx="85" cy="85" r="48" fill="#111" stroke="#ffcc00" stroke-width="4" />
+        <circle cx="885" cy="85" r="48" fill="#111" stroke="#ffcc00" stroke-width="4" />
+        <circle cx="85" cy="885" r="48" fill="#111" stroke="#ffcc00" stroke-width="4" />
+        <circle cx="885" cy="885" r="48" fill="#111" stroke="#ffcc00" stroke-width="4" />
+
+        <line x1="200" y1="792.5" x2="770" y2="792.5" stroke="#b37d42" stroke-width="2" opacity="0.5"/>
+        <line x1="200" y1="775" x2="770" y2="775" stroke="#b37d42" stroke-width="4" />
+        <line x1="200" y1="810" x2="770" y2="810" stroke="#b37d42" stroke-width="4" />
+        <circle cx="200" cy="792.5" r="22" fill="none" stroke="#b37d42" stroke-width="4" />
+        <circle cx="200" cy="792.5" r="12" fill="#b37d42" />
+        <circle cx="770" cy="792.5" r="22" fill="none" stroke="#b37d42" stroke-width="4" />
+        <circle cx="770" cy="792.5" r="12" fill="#b37d42" />
+
+        <line x1="200" y1="177.5" x2="770" y2="177.5" stroke="#b37d42" stroke-width="2" opacity="0.5"/>
+        <line x1="200" y1="160" x2="770" y2="160" stroke="#b37d42" stroke-width="4" />
+        <line x1="200" y1="195" x2="770" y2="195" stroke="#b37d42" stroke-width="4" />
+        <circle cx="200" cy="177.5" r="22" fill="none" stroke="#b37d42" stroke-width="4" />
+        <circle cx="200" cy="177.5" r="12" fill="#b37d42" />
+        <circle cx="770" cy="177.5" r="22" fill="none" stroke="#b37d42" stroke-width="4" />
+        <circle cx="770" cy="177.5" r="12" fill="#b37d42" />
+
+        <line x1="160" y1="200" x2="160" y2="770" stroke="#b37d42" stroke-width="4" />
+        <line x1="195" y1="200" x2="195" y2="770" stroke="#b37d42" stroke-width="4" />
+        <line x1="775" y1="200" x2="775" y2="770" stroke="#b37d42" stroke-width="4" />
+        <line x1="810" y1="200" x2="810" y2="770" stroke="#b37d42" stroke-width="4" />
+
+        <circle cx="485" cy="485" r="150" fill="none" stroke="#b37d42" stroke-width="3" stroke-dasharray="10, 8" />
+        <circle cx="485" cy="485" r="120" fill="none" stroke="#b37d42" stroke-width="4" />
+        <circle cx="485" cy="485" r="40" fill="none" stroke="#b37d42" stroke-width="2" />
+
+        <line id="aim-line" x1="0" y1="0" x2="0" y2="0" stroke="#ff3333" stroke-width="5" stroke-dasharray="8,5" opacity="0" />
+
+        <g id="coins-layer"></g>
+
+        <g id="board-striker" transform="translate(485, 792.5)">
+          <circle cx="0" cy="0" r="38" fill="url(#striker-grad)" stroke="url(#gold-grad)" stroke-width="4" filter="url(#glow)"/>
+          <circle cx="0" cy="0" r="28" fill="none" stroke="#fff" stroke-width="2" opacity="0.8"/>
+          <polygon points="0,-18 5,-5 18,-5 8,4 12,17 0,9 -12,17 -8,4 -18,-5 -5,-5" fill="#fff" />
+        </g>
+      </g>
+
+      <g id="control-slider-group" transform="translate(200, 1520)">
+        <rect width="600" height="70" rx="35" fill="#421a07" stroke="url(#gold-grad)" stroke-width="3" />
+        <g id="slider-handle" transform="translate(300, 35)">
+          <circle cx="0" cy="0" r="42" fill="url(#striker-grad)" stroke="#fff" stroke-width="3" filter="url(#glow)" />
+          <polygon points="0,-15 4,-4 15,-4 7,3 10,14 0,7 -10,14 -7,3 -15,-4 -4,-4" fill="#fff" />
+        </g>
+      </g>
+
+      <g transform="translate(100, 1720)">
+        <circle cx="0" cy="0" r="65" fill="#e67e22" stroke="url(#gold-grad)" stroke-width="5" filter="url(#glow)"/>
+        <circle cx="0" cy="-5" r="25" fill="#fff"/>
+        <polygon points="-20,10 0,5 -5,25" fill="#fff"/>
+        <circle cx="-12" cy="-5" r="4" fill="#e67e22"/>
+        <circle cx="0" cy="-5" r="4" fill="#e67e22"/>
+        <circle cx="12" cy="-5" r="4" fill="#e67e22"/>
+      </g>
+
+      <g transform="translate(900, 1720)">
+        <circle cx="0" cy="0" r="65" fill="#e67e22" stroke="url(#gold-grad)" stroke-width="5" filter="url(#glow)"/>
+        <line x1="-25" y1="-15" x2="25" y2="-15" stroke="#fff" stroke-width="8" stroke-linecap="round"/>
+        <line x1="-25" y1="0" x2="25" y2="0" stroke="#fff" stroke-width="8" stroke-linecap="round"/>
+        <line x1="-25" y1="15" x2="25" y2="15" stroke="#fff" stroke-width="8" stroke-linecap="round"/>
+      </g>
+    </svg>
+</div>
+
+<script>
+// 🎵 રિયલિસ્ટિક અને સચોટ હાઇ-ડેફિનેશન ઓડિયો પ્રોસેસર
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+function playSound(type, intensity = 1) {
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    
+    intensity = Math.max(0.1, Math.min(1, intensity));
+
+    if (type === 'hit') {
+        // કોઈન અથડાવાનો શાર્પ વુડન કડાકો
+        let osc = audioCtx.createOscillator();
+        let gainNode = audioCtx.createGain();
+        osc.connect(gainNode); gainNode.connect(audioCtx.destination);
+        
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(280, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(450, audioCtx.currentTime + 0.02);
+        gainNode.gain.setValueAtTime(intensity * 0.9, audioCtx.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.05);
+        osc.start(); osc.stop(audioCtx.currentTime + 0.05);
+    } else if (type === 'bounce') {
+        // ભારે ફ્રેમ થમ્પ અવાજ
+        let osc = audioCtx.createOscillator();
+        let gainNode = audioCtx.createGain();
+        osc.connect(gainNode); gainNode.connect(audioCtx.destination);
+
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(110, audioCtx.currentTime);
+        gainNode.gain.setValueAtTime(intensity * 1.2, audioCtx.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.09);
+        osc.start(); osc.stop(audioCtx.currentTime + 0.09);
+    } else if (type === 'pocket') {
+        // સચોટ પ્લાસ્ટિક ડ્રોપ પ્લોપ અવાજ
+        let osc = audioCtx.createOscillator();
+        let gainNode = audioCtx.createGain();
+        osc.connect(gainNode); gainNode.connect(audioCtx.destination);
+
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(320, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(60, audioCtx.currentTime + 0.25);
+        gainNode.gain.setValueAtTime(0.8, audioCtx.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.25);
+        osc.start(); osc.stop(audioCtx.currentTime + 0.25);
+    }
+}
+
+// 🕹️ ગેમ મેનેજમેન્ટ અને ઇકોનોમી સ્ટેટ્સ
+let walletBalance = 5000;
+let currentGameMode = 'pvp'; // 'pvp' અથવા 'ai'
+let currentBet = 0;
+let targetPoints = 120;
+
+let currentTurn = 1; // 1 = Jessica, 2 = John/Robot
+let gameState = 'menu'; // 'menu', 'betting', 'positioning', 'aiming', 'playing', 'gameover'
+let scores = { p1: 0, p2: 0 };
+const friction = 0.983; // રિયલિસ્ટિક અને સ્મૂધ રોલિંગ સ્લોડાઉન
+
+const boardMin = 40;
+const boardMax = 930;
+
+const pockets = [
+    {x: 85, y: 85, r: 48}, {x: 885, y: 85, r: 48},
+    {x: 85, y: 885, r: 48}, {x: 885, y: 885, r: 48}
+];
+
+let striker = { x: 485, y: 792.5, vx: 0, vy: 0, r: 38, mass: 3.5 };
+let coins = [];
+
+// 📱 પિક્સેલ પર્ફેક્ટ યુઝર ટચ / માઉસ ઇનપુટ ડિટેક્ટર
+const svgEl = document.getElementById('carrom-svg');
+function getSVGPoint(e) {
+    if (!e) return null;
+    const p = svgEl.createSVGPoint();
+    let clientX, clientY;
+
+    if (e.touches && e.touches.length > 0) {
+        clientX = e.touches[0].clientX; clientY = e.touches[0].clientY;
+    } else if (e.changedTouches && e.changedTouches.length > 0) {
+        clientX = e.changedTouches[0].clientX; clientY = e.changedTouches[0].clientY;
+    } else {
+        clientX = e.clientX; clientY = e.clientY;
+    }
+    if (clientX === undefined || clientY === undefined) return null;
+
+    p.x = clientX; p.y = clientY;
+    const ctm = svgEl.getScreenCTM();
+    if (!ctm) return null;
+    return p.matrixTransform(ctm.inverse());
+}
+
+// 🏠 મેનુ નેવિગેશન ફંક્શનલિટી
+function updateWalletUI() {
+    document.getElementById('wallet-balance-home').textContent = walletBalance;
+    document.getElementById('wallet-balance-bet').textContent = walletBalance;
+    document.getElementById('wallet-balance-over').textContent = walletBalance;
+    document.getElementById('live-wallet-txt').textContent = `વોલેટ: ₹${walletBalance}`;
+}
+
+function selectMode(mode) {
+    currentGameMode = mode;
+    document.getElementById('p2-name').textContent = (mode === 'ai') ? "Robot (AI)" : "John";
+    
+    // બેટ બટનો ચેક કરવા જો બેલેન્સ પૂરતું ન હોય
+    document.getElementById('btn-bet-1000').disabled = walletBalance < 1000;
+    document.getElementById('btn-bet-2000').disabled = walletBalance < 2000;
+    document.getElementById('btn-bet-5000').disabled = walletBalance < 5000;
+
+    document.getElementById('home-screen').classList.add('hidden');
+    document.getElementById('bet-screen').classList.remove('hidden');
+    gameState = 'betting';
+}
+
+function backToHome() {
+    document.getElementById('bet-screen').classList.add('hidden');
+    document.getElementById('game-over-screen').classList.add('hidden');
+    document.getElementById('home-screen').classList.remove('hidden');
+    gameState = 'menu';
+    updateWalletUI();
+}
+
+function startMatch(betAmount) {
+    if (walletBalance < betAmount) return alert("તમારી પાસે પૂરતું બેલેન્સ નથી!");
+    
+    currentBet = betAmount;
+    walletBalance -= betAmount;
+    updateWalletUI();
+
+    document.getElementById('live-bet-txt').textContent = `બેટ: ₹${currentBet}`;
+    document.getElementById('bet-screen').classList.add('hidden');
+    
+    // રીસેટ સ્કોર્સ
+    scores.p1 = 0; scores.p2 = 0;
+    document.getElementById('p1-score').textContent = "0";
+    document.getElementById('p2-score').textContent = "0";
+    
+    currentTurn = 1;
+    gameState = 'positioning';
+    initCoins();
+    resetStriker();
+}
+
+// ⚪ 🟤 🔴 પ્રીમિયમ કોઈન્સ જનરેશન સિસ્ટમ
+function initCoins() {
+    const layer = document.getElementById('coins-layer');
+    layer.innerHTML = '';
+    coins = [];
+
+    const positions = [
+        {x: 485, y: 485, t: 'queen', fill: 'url(#queen-coin)', stroke: '#400'},
+        {x: 485, y: 435, t: 'white', fill: 'url(#white-coin)', stroke: '#888'},
+        {x: 485, y: 535, t: 'white', fill: 'url(#white-coin)', stroke: '#888'},
+        {x: 435, y: 485, t: 'black', fill: 'url(#black-coin)', stroke: '#111'},
+        {x: 535, y: 485, t: 'black', fill: 'url(#black-coin)', stroke: '#111'},
+        {x: 448, y: 448, t: 'white', fill: 'url(#white-coin)', stroke: '#888'},
+        {x: 522, y: 522, t: 'white', fill: 'url(#white-coin)', stroke: '#888'},
+        {x: 522, y: 448, t: 'black', fill: 'url(#black-coin)', stroke: '#111'},
+        {x: 448, y: 522, t: 'black', fill: 'url(#black-coin)', stroke: '#111'},
+        {x: 400, y: 460, t: 'white', fill: 'url(#white-coin)', stroke: '#888'},
+        {x: 570, y: 460, t: 'white', fill: 'url(#white-coin)', stroke: '#888'},
+        {x: 450, y: 398, t: 'black', fill: 'url(#black-coin)', stroke: '#111'},
+        {x: 520, y: 398, t: 'black', fill: 'url(#black-coin)', stroke: '#111'},
+        {x: 450, y: 572, t: 'black', fill: 'url(#black-coin)', stroke: '#111'},
+        {x: 520, y: 572, t: 'white', fill: 'url(#white-coin)', stroke: '#888'},
+        {x: 400, y: 510, t: 'black', fill: 'url(#black-coin)', stroke: '#111'},
+        {x: 570, y: 510, t: 'white', fill: 'url(#white-coin)', stroke: '#888'}
+    ];
+
+    positions.forEach((pos, i) => {
+        let circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+        circle.setAttribute('id', `coin-${i}`);
+        circle.setAttribute('cx', '0'); circle.setAttribute('cy', '0'); circle.setAttribute('r', '26');
+        circle.setAttribute('fill', pos.fill); circle.setAttribute('stroke', pos.stroke);
+        circle.setAttribute('stroke-width', '1.5');
+
+        if (pos.t === 'queen') {
+            let innerRing = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+            innerRing.setAttribute('cx', '0'); innerRing.setAttribute('cy', '0'); innerRing.setAttribute('r', '14');
+            innerRing.setAttribute('fill', 'none'); innerRing.setAttribute('stroke', '#fff'); innerRing.setAttribute('stroke-width', '1.5'); innerRing.setAttribute('opacity', '0.6');
+            circle = document.createElementNS("http://www.w3.org/2000/svg", "g");
+            circle.setAttribute('id', `coin-${i}`);
+            let baseCircle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+            baseCircle.setAttribute('cx', '0'); baseCircle.setAttribute('cy', '0'); baseCircle.setAttribute('r', '26'); baseCircle.setAttribute('fill', pos.fill);
+            circle.appendChild(baseCircle); circle.appendChild(innerRing);
+        }
+        layer.appendChild(circle);
+        coins.push({ id: `coin-${i}`, type: pos.t, x: pos.x, y: pos.y, vx: 0, vy: 0, r: 26, mass: 1.0, active: true });
+    });
+    updateCoinsUI();
+}
+
+function updateCoinsUI() {
+    coins.forEach(c => {
+        let el = document.getElementById(c.id);
+        if (el) {
+            if (c.active) { el.setAttribute('transform', `translate(${c.x}, ${c.y})`); }
+            else { el.style.display = 'none'; }
+        }
+    });
+}
+
+function resetStriker() {
+    striker.vx = 0; striker.vy = 0;
+    striker.x = 485;
+    striker.y = (currentTurn === 1) ? 792.5 : 177.5; 
+    document.getElementById('board-striker').setAttribute('transform', `translate(${striker.x}, ${striker.y})`);
+    document.getElementById('slider-handle').setAttribute('transform', `translate(300, 35)`);
+    document.getElementById('aim-line').setAttribute('opacity', '0');
+    
+    const status = document.getElementById('turn-status');
+    const p2Name = (currentGameMode === 'ai') ? "ROBOT'S TURN" : "JOHN'S TURN";
+    status.textContent = (currentTurn === 1) ? "JESSICA'S TURN" : p2Name;
+
+    // જો રોબોટનો વારો હોય તો ઓટોમેટીક શૂટિંગ પ્રોસેસ ટ્રિગર કરો
+    if (currentGameMode === 'ai' && currentTurn === 2 && gameState === 'positioning') {
+        document.getElementById('control-slider-group').setAttribute('opacity', '0.3');
+        setTimeout(executeRobotTurn, 1000);
+    } else {
+        document.getElementById('control-slider-group').setAttribute('opacity', '1');
+    }
+}
+
+// 🤖 એડવાન્સ્ડ રિયલિસ્ટિક આર્ટિફિશિયલ ઇન્ટેલિજન્સ (AI Robot Mode)
+function executeRobotTurn() {
+    if (gameState !== 'positioning') return;
+
+    // રોબોટ સ્ટ્રાઈકરને હોરિઝોન્ટલ પોઝિશન પર થોડો રેન્ડમલી સ્લાઈડ કરશે
+    striker.x = 250 + Math.random() * 480;
+    document.getElementById('board-striker').setAttribute('transform', `translate(${striker.x}, ${striker.y})`);
+
+    // બોર્ડ પર હાજર સક્રિય સિક્કાઓ શોધો
+    let activeCoins = coins.filter(c => c.active);
+    if (activeCoins.length === 0) { finishTurn(); return; }
+
+    // કોઈ એક સિક્કા પર ટાર્ગેટ ગોઠવો
+    let target = activeCoins[Math.floor(Math.random() * activeCoins.length)];
+    
+    // શૂટિંગ કોણ (Angle) અને ફોર્સ ગણતરી
+    let dx = target.x - striker.x;
+    let dy = target.y - striker.y;
+    
+    // થોડી હ્યુમન-લાઈક ભૂલ (Error factor) એડ કરો જેથી રિયલ ગેમ પ્લે લાગે
+    let errorFactor = (Math.random() - 0.5) * 0.12;
+    let angle = Math.atan2(dy, dx) + errorFactor;
+    
+    // વેરિયેબલ પાવર પુશ
+    let speed = 16 + Math.random() * 10;
+    
+    striker.vx = Math.cos(angle) * speed;
+    striker.vy = Math.sin(angle) * speed;
+
+    playSound('hit', 1);
+    gameState = 'playing';
+    requestAnimationFrame(updatePhysics);
+}
+
+// 🕹️ મેન્યુઅલ પ્લેયર કંટ્રોલ્સ (સ્લાઇડર અને એમિંગ)
+let isSliding = false, isAiming = false, startPoint = null;
+
+document.getElementById('slider-handle').addEventListener('mousedown', () => { if(gameState==='positioning' && currentTurn===1) isSliding = true; });
+document.getElementById('slider-handle').addEventListener('touchstart', () => { if(gameState==='positioning' && currentTurn===1) isSliding = true; });
+
+document.getElementById('board-striker').addEventListener('mousedown', startAim);
+document.getElementById('board-striker').addEventListener('touchstart', startAim);
+
+function startAim(e) {
+    if (gameState !== 'positioning') return;
+    if (currentGameMode === 'ai' && currentTurn === 2) return; // AI નો વારો હોય ત્યારે પ્લેયર અડી ન શકે
+    let p = getSVGPoint(e); if (!p) return;
+    isAiming = true; gameState = 'aiming'; startPoint = p;
+}
+
+window.addEventListener('mousemove', handleMove);
+window.addEventListener('touchmove', handleMove);
+
+function handleMove(e) {
+    let p = getSVGPoint(e); if (!p) return;
+
+    if (isSliding && gameState === 'positioning') {
+        let sliderX = Math.max(200, Math.min(800, p.x));
+        document.getElementById('slider-handle').setAttribute('transform', `translate(${sliderX - 200}, 35)`);
+        let pct = (sliderX - 200) / 600;
+        striker.x = 200 + (pct * 570);
+        document.getElementById('board-striker').setAttribute('transform', `translate(${striker.x}, ${striker.y})`);
+    } 
+    else if (isAiming && startPoint) {
+        let dx = p.x - startPoint.x; let dy = p.y - startPoint.y;
+        let aimLine = document.getElementById('aim-line');
+        aimLine.setAttribute('opacity', '1');
+        aimLine.setAttribute('x1', striker.x); aimLine.setAttribute('y1', striker.y);
+        aimLine.setAttribute('x2', striker.x - dx); aimLine.setAttribute('y2', striker.y - dy);
+    }
+}
+
+window.addEventListener('mouseup', endAction);
+window.addEventListener('touchend', endAction);
+
+function endAction(e) {
+    if (isSliding) isSliding = false;
+    else if (isAiming) {
+        isAiming = false;
+        document.getElementById('aim-line').setAttribute('opacity', '0');
+        
+        let p = getSVGPoint(e); if (!p || !startPoint) { gameState = 'positioning'; return; }
+        let dx = startPoint.x - p.x; let dy = startPoint.y - p.y;
+        
+        striker.vx = dx * 0.16; striker.vy = dy * 0.16;
+        
+        if (Math.abs(striker.vx) > 0.4 || Math.abs(striker.vy) > 0.4) {
+            playSound('hit', 1);
+            gameState = 'playing';
+            requestAnimationFrame(updatePhysics);
+        } else { 
+            gameState = 'positioning'; 
+        }
+    }
+}
+
+// 🧬 રિયલ ૨D ઇલાસ્ટિક ફિઝિક્સ એન્જિન
+function checkCollision(c1, c2) {
+    let dx = c2.x - c1.x; let dy = c2.y - c1.y;
+    let dist = Math.sqrt(dx*dx + dy*dy);
+    let minDist = c1.r + c2.r;
+
+    if (dist < minDist) {
+        let overlap = minDist - dist;
+        let nx = dx / dist; let ny = dy / dist;
+        c1.x -= nx * overlap * 0.5; c1.y -= ny * overlap * 0.5;
+        c2.x += nx * overlap * 0.5; c2.y += ny * overlap * 0.5;
+
+        let kx = c1.vx - c2.vx; let ky = c1.vy - c2.vy;
+        let p = 2 * (nx * kx + ny * ky) / (c1.mass + c2.mass);
+        
+        c1.vx -= p * c2.mass * nx; c1.vy -= p * c2.mass * ny;
+        c2.vx += p * c1.mass * nx; c2.vy += p * c1.mass * ny;
+
+        let hitSpeed = Math.sqrt(c1.vx*c1.vx + c1.vy*c1.vy);
+        if(hitSpeed > 0.4) playSound('hit', hitSpeed / 12);
+    }
+}
+
+let coinPocketedThisTurn = false;
+
+function updatePhysics() {
+    let anyMoving = false;
+
+    if (Math.abs(striker.vx) > 0.08 || Math.abs(striker.vy) > 0.08) {
+        striker.x += striker.vx; striker.y += striker.vy;
+        striker.vx *= friction; striker.vy *= friction;
+        anyMoving = true;
+
+        let sMin = boardMin + striker.r; let sMax = boardMax - striker.r;
+        if (striker.x < sMin) { striker.x = sMin; striker.vx *= -1; playSound('bounce', Math.abs(striker.vx)/8); }
+        if (striker.x > sMax) { striker.x = sMax; striker.vx *= -1; playSound('bounce', Math.abs(striker.vx)/8); }
+        if (striker.y < sMin) { striker.y = sMin; striker.vy *= -1; playSound('bounce', Math.abs(striker.vy)/8); }
+        if (striker.y > sMax) { striker.y = sMax; striker.vy *= -1; playSound('bounce', Math.abs(striker.vy)/8); }
+    } else { striker.vx = 0; striker.vy = 0; }
+
+    coins.forEach(c => {
+        if (!c.active) return;
+        if (Math.abs(c.vx) > 0.08 || Math.abs(c.vy) > 0.08) {
+            c.x += c.vx; c.y += c.vy;
+            c.vx *= friction; c.vy *= friction;
+            anyMoving = true;
+
+            let cMin = boardMin + c.r; let cMax = boardMax - c.r;
+            if (c.x < cMin) { c.x = cMin; c.vx *= -1; playSound('bounce', Math.abs(c.vx)/7); }
+            if (c.x > cMax) { c.x = cMax; c.vx *= -1; playSound('bounce', Math.abs(c.vx)/7); }
+            if (c.y < cMin) { c.y = cMin; c.vy *= -1; playSound('bounce', Math.abs(c.vy)/7); }
+            if (c.y > cMax) { c.y = cMax; c.vy *= -1; playSound('bounce', Math.abs(c.vy)/7); }
+
+            pockets.forEach(p => {
+                let pdx = c.x - p.x; let pdy = c.y - p.y;
+                if (Math.sqrt(pdx*pdx + pdy*pdy) < p.r - 4) {
+                    c.active = false;
+                    c.vx = 0; c.vy = 0;
+                    playSound('pocket', 1);
+                    awardPoints(c.type);
+                }
+            });
+        } else { c.vx = 0; c.vy = 0; }
+
+        checkCollision(striker, c);
+    });
+
+    for (let i = 0; i < coins.length; i++) {
+        for (let j = i + 1; j < coins.length; j++) {
+            if (coins[i].active && coins[j].active) checkCollision(coins[i], coins[j]);
+        }
+    }
+
+    document.getElementById('board-striker').setAttribute('transform', `translate(${striker.x}, ${striker.y})`);
+    updateCoinsUI();
+
+    if (anyMoving && gameState === 'playing') {
+        requestAnimationFrame(updatePhysics);
+    } else if (gameState === 'playing') {
+        finishTurn();
+    }
+}
+
+// 🎯 સ્કોરિંગ અને વિનિંગ સિસ્ટમ (કોઈ કલર રિસ્ટ્રિક્શન નથી - જે પાડે તેને પોઇન્ટ્સ)
+function awardPoints(type) {
+    coinPocketedThisTurn = true;
+    let pts = (type === 'queen') ? 50 : 10;
+    
+    if (currentTurn === 1) {
+        scores.p1 += pts;
+        document.getElementById('p1-score').textContent = scores.p1;
+    } else {
+        scores.p2 += pts;
+        document.getElementById('p2-score').textContent = scores.p2;
+    }
+
+    // 120 પોઇન્ટ વિનિંગ કન્ડિશન ચેક
+    if (scores.p1 >= targetPoints) {
+        endGame(1);
+    } else if (scores.p2 >= targetPoints) {
+        endGame(2);
+    }
+}
+
+function finishTurn() {
+    if (gameState === 'gameover') return;
+
+    // જો કોઈન્સ ખૂટી ગયા હોય પણ સ્કોર 120 ન થયો હોય તો સિક્કા રી-જનરેટ કરો (Infinite Play Loop)
+    let activeCoinsCount = coins.filter(c => c.active).length;
+    if (activeCoinsCount === 0) {
+        initCoins();
+    }
+
+    if (!coinPocketedThisTurn) {
+        currentTurn = (currentTurn === 1) ? 2 : 1;
+    }
+    coinPocketedThisTurn = false;
+    gameState = 'positioning';
+    resetStriker();
+}
+
+function endGame(winner) {
+    gameState = 'gameover';
+    const overScreen = document.getElementById('game-over-screen');
+    const winnerTitle = document.getElementById('winner-title');
+    const prizeStatus = document.getElementById('prize-status');
+
+    if (winner === 1) {
+        // Jessica જીતી (યુઝર જીત્યો)
+        winnerTitle.textContent = "JESSICA WON! 🏆";
+        let winAmount = currentBet * 2;
+        walletBalance += winAmount;
+        prizeStatus.textContent = `તમે જીત્યા: +₹${winAmount}`;
+        prizeStatus.style.color = "#2ecc71";
+    } else {
+        // Robot કે John જીત્યો
+        let opponentName = (currentGameMode === 'ai') ? "ROBOT" : "JOHN";
+        winnerTitle.textContent = `${opponentName} WON! 🛑`;
+        prizeStatus.textContent = `તમે બેટ હારી ગયા: -₹${currentBet}`;
+        prizeStatus.style.color = "#e74c3c";
+    }
+
+    updateWalletUI();
+    overScreen.classList.remove('hidden');
+}
+
+// 🚀 ગેમ લોંચ ઓન રીલોડ
+updateWalletUI();
+</script>
+
+</body>
+</html>
