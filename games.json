@@ -20,6 +20,14 @@
       "type": "Game",
       "url": "https://peppy-klepon-d5ed3a.netlify.app",
       "openDirect": false
+    },
+    {
+      "id": "item_1781339036838",
+      "title": "કેરમ",
+      "logo": "https://files.catbox.moe/74fuaz.png",
+      "type": "Game",
+      "url": "https://ahaanmesaniya-bot.github.io/r7-database/games/----.html",
+      "openDirect": false
     }
   ]
 }
