@@ -4,5 +4,14 @@
     "gradient": "linear-gradient(135deg, #0984e3 0%, #00cec9 100%)"
   },
   "privacy_policy": "Welcome to R7 Game Zone. We respect your privacy and do not collect any personal data.",
-  "items": []
+  "items": [
+    {
+      "id": "item_1781325110389",
+      "title": "કેરમ",
+      "logo": "https://files.catbox.moe/74fuaz.png",
+      "type": "Game",
+      "url": "peppy-klepon-d5ed3a.netlify.app",
+      "openDirect": false
+    }
+  ]
 }
