@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Physics Tower Game - Bug Free Pro 🧱</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background: linear-gradient(to bottom, #111827, #312e81);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            user-select: none;
+            -webkit-user-select: none;
+            transition: background 1.5s ease; 
+            height: 100vh;
+        }
+
+        #ui-top {
+            position: absolute;
+            top: 2%;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+            color: white;
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        #score {
+            font-size: 55px;
+            font-weight: bold;
+            color: #ffd166;
+            margin: 0;
+            text-shadow: 0 4px 8px rgba(0,0,0,0.5);
+        }
+
+        #best-score-container {
+            font-size: 16px;
+            color: #a5b4fc;
+            margin-top: 2px;
+            font-weight: 600;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.4);
+        }
+
+        #ui-buttons-bar {
+            position: absolute;
+            bottom: 4%;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 15px;
+            z-index: 15;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 10px 20px;
+            border-radius: 40px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        }
+
+        .game-btn {
+            width: 55px;
+            height: 55px;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            position: relative;
+            background-size: cover;
+            background-position: center;
+            background-color: #ffffff;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            transition: transform 0.1s ease, background-color 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .game-btn:active {
+            transform: scale(0.9);
+        }
+
+        .badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: #ef4444;
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+            padding: 2px 7px;
+            border-radius: 10px;
+            border: 2px solid white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+
+        #game-over-screen {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            color: white;
+            z-index: 20;
+            background: rgba(15, 23, 42, 0.95);
+            padding: 30px;
+            border-radius: 15px;
+            border: 3px solid #ef4444;
+            width: 80%;
+            max-width: 320px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+        }
+
+        #game-over-screen h2 {
+            color: #ef4444;
+            margin-top: 0;
+            font-size: 35px;
+            margin-bottom: 5px;
+        }
+
+        .restart-btn {
+            padding: 12px 30px;
+            font-size: 18px;
+            font-weight: bold;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 12px;
+            width: 100%;
+            display: block;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
+</head>
+<body>
+
+    <div id="ui-top">
+        <h1 id="score">0</h1>
+        <div id="best-score-container">Best Score: <span id="best-score">0</span></div>
+    </div>
+
+    <div id="ui-buttons-bar">
+        <button class="game-btn" id="btn-reset" title="Reset Game">🔄</button>
+        <button class="game-btn" id="btn-undo" title="Undo Last Step">↩️ <span class="badge" id="undo-badge">0</span></button>
+        <button class="game-btn" id="btn-hint" title="Get Hint">💡 <span class="badge" id="hint-badge">0</span></button>
+        <button class="game-btn" id="btn-pause" title="Pause/Play">⏸️</button>
+    </div>
+
+    <div id="game-over-screen">
+        <h2>Game Over! 💥</h2>
+        <p style="font-size: 24px; color: #ffd166; font-weight: bold; margin: 10px 0 2px 0;">Score: <span id="final-score">0</span></p>
+        <p style="font-size: 16px; color: #a5b4fc; margin: 0 0 15px 0;">Best: <span id="final-best-score">0</span></p>
+        
+        <button id="btn-revive" class="restart-btn" style="background: #f59e0b;">↩️ Continue This Game</button>
+        <button class="restart-btn" onclick="restartNewGame()" style="background: #06d6a0;">Restart New Game</button>
+    </div>
+
+    <script>
+        const { Engine, Render, Runner, Bodies, Composite, Body, Events } = Matter;
+
+        let engine, render, runner;
+        let currentBlock = null;
+        let blocks = [];
+        let ground;
+        
+        let score = 0;
+        let highScore = parseInt(localStorage.getItem('tower_high_score')) || 0;
+        let isGameOver = false;
+        let isPaused = false;
+        let gameState = 'moving'; 
+        
+        let screenWidth = window.innerWidth;
+        let screenHeight = window.innerHeight;
+
+        let cameraY = 0;
+        let targetCameraY = 0;
+        
+        const blockWidth = 130;
+        const blockHeight = 40;
+        let blockSpeed = 4;
+        let blockDirection = 1;
+        let currentX = 0;
+        let currentY = 0;
+        
+        let undoCount = parseInt(localStorage.getItem('tower_undo_count')) || 0;
+        let hintCount = parseInt(localStorage.getItem('tower_hint_count')) || 0;
+        const smartAdLink = "https://www.effectivecpmnetwork.com/b6h07j148?key=0801f450b532f076826f1a8e0e69818a";
+
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playTone(freq, type, duration, vol = 0.1) {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = type;
+            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+            
+            gain.gain.setValueAtTime(vol, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+            
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + duration);
+        }
+
+        function playSndDrop() { playTone(250, 'sine', 0.1, 0.2); }
+        function playSndSuccess() { 
+            playTone(600, 'triangle', 0.1, 0.1); 
+            setTimeout(() => playTone(800, 'triangle', 0.15, 0.1), 100); 
+        }
+        function playSndHint() { playTone(900, 'sine', 0.4, 0.1); }
+        function playSndGameOver() { 
+            playTone(300, 'sawtooth', 0.3, 0.1);
+            setTimeout(() => playTone(250, 'sawtooth', 0.4, 0.1), 200);
+            setTimeout(() => playTone(200, 'sawtooth', 0.5, 0.1), 400);
+        }
+
+        function init() {
+            engine = Engine.create({ gravity: { y: 1.6 } }); 
+
+            render = Render.create({
+                element: document.body,
+                engine: engine,
+                options: {
+                    width: screenWidth,
+                    height: screenHeight,
+                    wireframes: false,
+                    background: 'transparent',
+                    hasBounds: true 
+                }
+            });
+
+            Render.run(render);
+            runner = Runner.create();
+            Runner.run(runner, engine);
+
+            ground = Bodies.rectangle(screenWidth / 2, screenHeight / 2, 160, 25, {
+                isStatic: true,
+                friction: 1.0,
+                render: { fillStyle: '#4b5563' }
+            });
+            Composite.add(engine.world, ground);
+
+            const savedStateStr = localStorage.getItem('tower_active_session');
+            if (savedStateStr) {
+                try {
+                    const savedState = JSON.parse(savedStateStr);
+                    score = savedState.score || 0;
+                    cameraY = savedState.cameraY || 0;
+                    targetCameraY = savedState.targetCameraY || 0;
+                    
+                    render.bounds.min.y = cameraY;
+                    render.bounds.max.y = screenHeight + cameraY;
+
+                    blocks = savedState.blocksData.map(bData => {
+                        return Bodies.rectangle(bData.x, bData.y, blockWidth, blockHeight, {
+                            isStatic: false,
+                            friction: 1.0,       
+                            restitution: 0.0,    
+                            density: 0.05,       
+                            render: { fillStyle: bData.color }
+                        });
+                    });
+                    blocks.forEach((b, i) => {
+                        Body.setAngle(b, savedState.blocksData[i].angle);
+                        Composite.add(engine.world, b);
+                    });
+                } catch (e) {
+                    resetProperties();
+                }
+            } else {
+                resetProperties();
+            }
+
+            render.bounds.min.x = 0;
+            render.bounds.max.x = screenWidth;
+
+            isGameOver = false;
+            isPaused = false;
+            
+            document.getElementById('score').innerText = score;
+            document.getElementById('best-score').innerText = highScore;
+            document.getElementById('game-over-screen').style.display = 'none';
+            
+            updateBackgroundColor();
+            updateBadges();
+            updateCameraPanning(true); 
+            spawnBlock();
+
+            Events.on(engine, 'beforeUpdate', updateGame);
+        }
+
+        function updateBackgroundColor() {
+            let bgHue1 = (220 + score * 15) % 360; 
+            let bgHue2 = (280 + score * 15) % 360; 
+            document.body.style.background = `linear-gradient(to bottom, hsl(${bgHue1}, 55%, 12%), hsl(${bgHue2}, 45%, 22%))`;
+        }
+
+        function updateCameraPanning(instantly = false) {
+            if (blocks.length === 0) {
+                targetCameraY = 0;
+            } else {
+                let highestY = Math.min(...blocks.map(b => b.position.y));
+                let threshold = (screenHeight / 2) - 160; 
+                if (highestY < threshold) {
+                    targetCameraY = highestY - threshold;
+                } else {
+                    targetCameraY = 0;
+                }
+            }
+            
+            if (instantly) {
+                cameraY = targetCameraY;
+                render.bounds.min.y = cameraY;
+                render.bounds.max.y = screenHeight + cameraY;
+                render.bounds.min.x = 0;
+                render.bounds.max.x = screenWidth;
+            }
+        }
+
+        function resetProperties() {
+            score = 0;
+            cameraY = 0;
+            targetCameraY = 0;
+            blocks = [];
+        }
+
+        function saveGameState() {
+            const activeBlocks = blocks.map(b => ({
+                x: b.position.x,
+                y: b.position.y,
+                angle: b.angle,
+                color: b.render.fillStyle
+            }));
+
+            const state = {
+                score: score,
+                cameraY: cameraY,
+                targetCameraY: targetCameraY,
+                blocksData: activeBlocks
+            };
+            localStorage.setItem('tower_active_session', JSON.stringify(state));
+        }
+
+        function spawnBlock() {
+            let highestY = screenHeight / 2; 
+            if (blocks.length > 0) {
+                highestY = Math.min(...blocks.map(b => b.position.y));
+            }
+
+            currentY = highestY - 75; 
+            currentX = blockWidth / 2;
+            blockDirection = Math.random() > 0.5 ? 1 : -1;
+            
+            blockSpeed = 4 + Math.floor(score / 4) * 0.7;
+            if (blockSpeed > 9) blockSpeed = 9;
+
+            const hue = (score * 35) % 360; 
+            
+            currentBlock = Bodies.rectangle(currentX, currentY, blockWidth, blockHeight, {
+                isStatic: true,
+                friction: 1.0,       
+                restitution: 0.0,    
+                density: 0.05,       
+                render: { fillStyle: `hsl(${hue}, 85%, 55%)` }
+            });
+
+            Composite.add(engine.world, currentBlock);
+            gameState = 'moving';
+        }
+
+        function updateGame() {
+            if (isGameOver || isPaused) return;
+
+            if (gameState === 'moving' && currentBlock) {
+                currentX += blockSpeed * blockDirection;
+                
+                if (currentX > screenWidth - blockWidth/2) {
+                    currentX = screenWidth - blockWidth/2;
+                    blockDirection = -1;
+                } else if (currentX < blockWidth/2) {
+                    currentX = blockWidth/2;
+                    blockDirection = 1;
+                }
+                
+                Body.setPosition(currentBlock, { x: currentX, y: currentY });
+            }
+
+            if (Math.abs(render.bounds.min.y - targetCameraY) > 0.5) {
+                cameraY += (targetCameraY - cameraY) * 0.025;
+                render.bounds.min.y = cameraY;
+                render.bounds.max.y = screenHeight + cameraY;
+            }
+
+            render.bounds.min.x = 0;
+            render.bounds.max.x = screenWidth;
+
+            // 🎯 સુધારો 1: ગેમ ઓવર કન્ડિશન ફિક્સ (હવે 19 સ્કોર પર ખોટી રીતે આઉટ નહીં થાય)
+            let lowestAllowedY = screenHeight + cameraY + 200; 
+            
+            // માત્ર જે બ્લોક લોક નથી (અનલોક છે) તે જ જો સાચે નીચે પડે તો આઉટ ગણાશે
+            for (let b of blocks) {
+                if (!b.isStatic && b.position.y > lowestAllowedY) {
+                    triggerGameOver();
+                    return;
+                }
+            }
+            
+            if (currentBlock && gameState === 'dropping' && currentBlock.position.y > lowestAllowedY) {
+                triggerGameOver();
+                return;
+            }
+
+            // સ્પીડ લિમિટ પણ થોડી વધુ ચોક્કસ (0.5) કરી જેથી બ્લોક સ્થિર થાય પછી જ આગળ વધે
+            if (gameState === 'dropping' && currentBlock && currentBlock.speed < 0.5 && currentBlock.angularSpeed < 0.2) {
+                handleBlockStabilized();
+            }
+        }
+
+        function handleBlockStabilized() {
+            blocks.push(currentBlock);
+            score++;
+            document.getElementById('score').innerText = score;
+            
+            playSndSuccess();
+
+            if (blocks.length > 3) {
+                for (let i = 0; i < blocks.length - 3; i++) {
+                    Body.setStatic(blocks[i], true);
+                }
+            }
+
+            if (score > highScore) {
+                highScore = score;
+                localStorage.setItem('tower_high_score', highScore);
+                document.getElementById('best-score').innerText = highScore;
+            }
+
+            updateBackgroundColor();
+            updateCameraPanning(); 
+            saveGameState();
+            
+            gameState = 'stable';
+            
+            setTimeout(() => {
+                if (!isGameOver) spawnBlock();
+            }, 300);
+        }
+
+        window.addEventListener('pointerdown', (e) => {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            if (isGameOver || isPaused) return;
+            if (e.target.closest('#ui-buttons-bar') || e.target.closest('#game-over-screen') || e.target.tagName === 'BUTTON') return; 
+
+            if (gameState === 'moving' && currentBlock) {
+                Body.setStatic(currentBlock, false); 
+                gameState = 'dropping';
+                playSndDrop();
+            }
+        });
+
+        function updateBadges() {
+            document.getElementById('undo-badge').innerText = undoCount;
+            document.getElementById('hint-badge').innerText = hintCount;
+            localStorage.setItem('tower_undo_count', undoCount);
+            localStorage.setItem('tower_hint_count', hintCount);
+        }
+
+        document.getElementById('btn-reset').addEventListener('click', restartNewGame);
+
+        document.getElementById('btn-undo').addEventListener('click', () => {
+            if (undoCount === 0) {
+                window.open(smartAdLink, '_blank');
+                undoCount++;
+                updateBadges();
+            } else {
+                if (blocks.length > 0 && gameState === 'moving') {
+                    let lastBlock = blocks.pop();
+                    Composite.remove(engine.world, lastBlock);
+                    
+                    score = Math.max(0, score - 1);
+                    document.getElementById('score').innerText = score;
+                    
+                    Composite.remove(engine.world, currentBlock);
+                    updateCameraPanning(); 
+                    saveGameState(); 
+                    spawnBlock();
+
+                    undoCount--;
+                    updateBadges();
+                }
+            }
+        });
+
+        document.getElementById('btn-hint').addEventListener('click', () => {
+            if (hintCount === 0) {
+                window.open(smartAdLink, '_blank');
+                hintCount++;
+                updateBadges();
+            } else {
+                if (gameState === 'moving' && currentBlock) {
+                    playSndHint();
+
+                    let targetX = screenWidth / 2;
+                    let highestY = screenHeight / 2;
+                    
+                    if (blocks.length > 0) {
+                        let topBlock = blocks[blocks.length - 1];
+                        targetX = topBlock.position.x;
+                        highestY = topBlock.position.y;
+                    }
+
+                    Body.setPosition(currentBlock, { x: targetX, y: highestY - blockHeight });
+                    Body.setAngle(currentBlock, 0);
+                    Body.setVelocity(currentBlock, { x: 0, y: 0 });
+                    Body.setAngularVelocity(currentBlock, 0);
+                    Body.setStatic(currentBlock, false);
+
+                    hintCount--;
+                    updateBadges();
+
+                    handleBlockStabilized();
+                }
+            }
+        });
+
+        document.getElementById('btn-pause').addEventListener('click', () => {
+            isPaused = !isPaused;
+            document.getElementById('btn-pause').innerText = isPaused ? "▶️" : "⏸️";
+        });
+
+        // 🎯 સુધારો 2: રિવાઇવ લોજિક ફિક્સ (ટાવર પોતાની જગ્યાએ અડીખમ રહેશે)
+        document.getElementById('btn-revive').addEventListener('click', () => {
+            if (currentBlock) {
+                Composite.remove(engine.world, currentBlock);
+            }
+
+            // ખરેખર નીચે પડી ગયેલા બ્લોકને જ લિસ્ટમાંથી હટાવશે
+            blocks = blocks.filter(b => {
+                if (b.position.y > screenHeight + cameraY + 200) {
+                    Composite.remove(engine.world, b);
+                    return false;
+                }
+                return true;
+            });
+
+            // બાકીના ઉભેલા ટાવરના બ્લોક્સને પોતાની જ જગ્યાએ લોક અને સીધા રાખશે
+            blocks.forEach((block, index) => {
+                Body.setVelocity(block, { x: 0, y: 0 });
+                Body.setAngularVelocity(block, 0);
+                
+                if (index < blocks.length - 3) {
+                    Body.setStatic(block, true); // નીચેના જૂના બ્લોક લોક જ રહેશે
+                } else {
+                    Body.setStatic(block, false);
+                    Body.setAngle(block, 0); // ઉપરના એક્ટિવ બ્લોકને સીધા કરી દેશે જેથી રમત સરળ બને
+                }
+            });
+
+            updateCameraPanning(true); 
+
+            saveGameState();
+            window.open(smartAdLink, '_blank');
+
+            isGameOver = false;
+            isPaused = false;
+            document.getElementById('game-over-screen').style.display = 'none';
+            document.getElementById('score').innerText = score;
+
+            spawnBlock();
+        });
+
+        function triggerGameOver() {
+            if (isGameOver) return;
+            isGameOver = true;
+            
+            playSndGameOver();
+
+            document.getElementById('final-score').innerText = score;
+            document.getElementById('final-best-score').innerText = highScore;
+            document.getElementById('game-over-screen').style.display = 'block';
+        }
+
+        function restartNewGame() {
+            localStorage.removeItem('tower_active_session'); 
+            Composite.clear(engine.world, false);
+            Events.off(engine, 'beforeUpdate', updateGame);
+            Render.stop(render);
+            Runner.stop(runner);
+            if (render.canvas) render.canvas.remove();
+            init();
+        }
+
+        window.onload = init;
+
+        window.addEventListener('resize', () => {
+            screenWidth = window.innerWidth;
+            screenHeight = window.innerHeight;
+            if (render) {
+                render.canvas.width = screenWidth;
+                render.canvas.height = screenHeight;
+                render.options.width = screenWidth;
+                render.options.height = screenHeight;
+                updateCameraPanning(true); 
+            }
+        });
+    </script>
+</body>
+</html>
