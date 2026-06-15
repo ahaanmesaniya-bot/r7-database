@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+<html lang="gu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Neon Ludo Champion</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght=600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: url('https://files.catbox.moe/zqffit.png') no-repeat center center fixed;
+            background-size: cover;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            font-family: 'Poppins', sans-serif;
+            overflow-x: hidden;
+            user-select: none;
+        }
+
+        @keyframes shake {
+            0% { transform: translate(1px, 1px) rotate(0deg); }
+            20% { transform: translate(-3px, 0px) rotate(1deg); }
+            40% { transform: translate(1px, -1px) rotate(1deg); }
+            60% { transform: translate(-3px, 1px) rotate(0deg); }
+            80% { transform: translate(-1px, -1px) rotate(1deg); }
+            100% { transform: translate(1px, -2px) rotate(0deg); }
+        }
+        .screen-shake { animation: shake 0.3s; }
+
+        /* -------------------------------------------------------------
+           ઓરિજિનલ ટેક્સ્ટ બટન્સ (btn-3d) સ્ટાઇલ
+        ------------------------------------------------------------- */
+        .btn-3d {
+            position: relative;
+            width: 160px;
+            height: 60px;
+            cursor: pointer;
+            transition: all 0.1s ease;
+            display: inline-block;
+            margin: 10px;
+        }
+        .btn-3d::before {
+            content: "";
+            position: absolute;
+            top: 8px;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #004d61;
+            clip-path: polygon(8% 0, 92% 0, 100% 25%, 100% 75%, 92% 100%, 8% 100%, 0 75%, 0 25%);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        .btn-border {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            padding: 3px; 
+            box-sizing: border-box;
+            clip-path: polygon(8% 0, 92% 0, 100% 25%, 100% 75%, 92% 100%, 8% 100%, 0 75%, 0 25%);
+        }
+        .btn-top {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            color: white;
+            font-size: 13px;
+            font-weight: 800;
+            text-transform: uppercase;
+            clip-path: polygon(8% 0, 92% 0, 100% 25%, 100% 75%, 92% 100%, 8% 100%, 0 75%, 0 25%);
+            background: linear-gradient(to bottom, #00b0ff 0%, #0091ea 100%);
+        }
+        .btn-3d:hover { transform: translateY(-2px); }
+        .btn-3d:active { transform: translateY(6px); }
+        .btn-3d:active::before { top: 2px; }
+
+        /* -------------------------------------------------------------
+           ઓરિજિનલ સ્ક્વેર આઇકોન બટન્સ (btn-icon-3d) - જે પહેલા કોડમાં હતા તે જ
+        ------------------------------------------------------------- */
+        .btn-icon-3d {
+            position: relative;
+            width: 75px; 
+            height: 75px;
+            cursor: pointer;
+            transition: all 0.1s ease;
+        }
+        .btn-icon-3d::before {
+            content: "";
+            position: absolute;
+            top: 6px;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #111;
+            clip-path: polygon(15% 0, 85% 0, 100% 15%, 100% 85%, 85% 100%, 15% 100%, 0 85%, 0 15%);
+        }
+        .btn-icon-border {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            padding: 3px;
+            box-sizing: border-box;
+            clip-path: polygon(15% 0, 85% 0, 100% 15%, 100% 85%, 85% 100%, 15% 100%, 0 85%, 0 15%);
+        }
+        .btn-icon-top {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-size: 52px; /* મીંડા એકદમ મોટા અને સ્પષ્ટ દેખાય તે માટે સાઈઝ વધારી */
+            font-weight: bold;
+            line-height: 1;
+            clip-path: polygon(15% 0, 85% 0, 100% 15%, 100% 85%, 85% 100%, 15% 100%, 0 85%, 0 15%);
+        }
+        .btn-icon-3d:hover { transform: translateY(-2px); }
+        .btn-icon-3d:active { transform: translateY(4px); }
+        .btn-icon-3d:active::before { top: 2px; }
+
+        /* સેટિંગ્સ બટન થીમ */
+        .settings-btn-color .btn-icon-top {
+            background: linear-gradient(to bottom, #00b0ff, #0091ea);
+            font-size: 24px;
+        }
+        .settings-btn-color::before { background: #004d61; }
+
+        /* પાસા (Dice Boxes) ના ઓરિજિનલ 3D કલર્સ */
+        .dice-green .btn-icon-top { background: linear-gradient(to bottom, #a3e4d7, #00b050); color: #fff; }
+        .dice-green::before { background: #0e6226; }
+        
+        .dice-red .btn-icon-top { background: linear-gradient(to bottom, #f9ebd2, #ff2e2e); color: #fff; }
+        .dice-red::before { background: #780b0b; }
+
+        .dice-yellow .btn-icon-top { background: linear-gradient(to bottom, #fffde7, #ffea00); color: #222; }
+        .dice-yellow::before { background: #9a7d0a; }
+
+        .dice-blue .btn-icon-top { background: linear-gradient(to bottom, #d6eaf8, #4ca8ed); color: #fff; }
+        .dice-blue::before { background: #0f416e; }
+
+        /* હોમ સ્ક્રીન */
+        #home-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: rgba(13, 21, 39, 0.85);
+            padding: 40px 30px;
+            border-radius: 24px;
+            border: 3px solid #00f3ff;
+            box-shadow: 0 0 30px rgba(0, 243, 255, 0.4);
+            text-align: center;
+            max-width: 380px;
+            width: 85vw;
+            backdrop-filter: blur(10px);
+        }
+        #home-screen h1 {
+            color: #00f3ff;
+            margin-bottom: 30px;
+            font-size: 2.5rem;
+            text-shadow: 0 0 10px rgba(0,243,255,0.5);
+            letter-spacing: 1px;
+        }
+
+        /* ગેમ સ્ક્રીન */
+        #game-screen {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            background: rgba(4, 7, 16, 0.5);
+            padding: 20px;
+            border-radius: 24px;
+            backdrop-filter: blur(5px);
+        }
+
+        .top-settings-bar {
+            position: absolute;
+            top: -5px;
+            right: 0px;
+            z-index: 500;
+        }
+
+        /* સેટિંગ્સ મેનૂ પોપઅપ */
+        #settings-popup-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(4, 7, 16, 0.7);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        #settings-popup-overlay.show { opacity: 1; }
+        .settings-popup-content {
+            background: rgba(13, 21, 39, 0.95);
+            padding: 30px;
+            border-radius: 24px;
+            border: 3px solid #00f3ff;
+            box-shadow: 0 0 30px rgba(0, 243, 255, 0.6);
+            text-align: center;
+            transform: scale(0.7);
+            transition: transform 0.3s ease;
+            max-width: 320px;
+            width: 80vw;
+        }
+        #settings-popup-overlay.show .settings-popup-content { transform: scale(1); }
+        .settings-popup-content h3 {
+            color: #00f3ff;
+            margin-top: 0;
+            margin-bottom: 25px;
+            font-size: 1.8rem;
+            text-shadow: 0 0 10px rgba(0,243,255,0.4);
+        }
+        .settings-buttons-row {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .game-container {
+            position: relative;
+            width: 92vw;
+            height: 92vw;
+            max-width: 520px; 
+            max-height: 520px;
+            background: rgba(13, 21, 39, 0.9);
+            border: 4px solid #00f3ff; 
+            border-radius: 20px;
+            box-shadow: 0 0 30px rgba(0, 243, 255, 0.5);
+            box-sizing: border-box;
+            margin: 85px 0 25px 0;
+        }
+
+        .board-wrapper {
+            width: 100%;
+            height: 100%;
+            background: #fff;
+            border-radius: 14px;
+            overflow: hidden;
+        }
+
+        /* પાસાની ઓરિજિનલ પોઝિશન અને એનિમેશન */
+        .ludo-dice-wrapper {
+            position: absolute;
+            z-index: 100;
+            transition: all 0.2s ease;
+        }
+        #dice-0 { top: -80px; left: 0; }
+        #dice-1 { top: -80px; right: 0; }
+        #dice-2 { bottom: -80px; right: 0; }
+        #dice-3 { bottom: -80px; left: 0; }
+
+        .ludo-dice-wrapper:not(.active) {
+            opacity: 0.2;
+            pointer-events: none;
+            transform: scale(0.85);
+        }
+        .ludo-dice-wrapper.active {
+            opacity: 1;
+            pointer-events: auto;
+            transform: scale(1.1);
+        }
+
+        @keyframes diceShake {
+            0% { transform: scale(1.1) rotate(0deg); }
+            20% { transform: scale(1.1) rotate(-15deg); }
+            40% { transform: scale(1.1) rotate(15deg); }
+            100% { transform: scale(1.1) rotate(0deg); }
+        }
+        .dice-shaking { animation: diceShake 0.1s infinite alternate; }
+
+        /* કુકડીઓ (Tokens) */
+        .player-token {
+            transform: scale(1.4);
+            transform-box: fill-box;
+            transform-origin: center;
+            cursor: pointer;
+            filter: drop-shadow(0 2px 3px rgba(0,0,0,0.4));
+            transition: filter 0.2s;
+        }
+
+        @keyframes realLudoHop {
+            0% { transform: scale(1.4) translateY(0); filter: drop-shadow(0 2px 3px rgba(0,0,0,0.4)); }
+            50% { transform: scale(2.1) translateY(-24px); filter: drop-shadow(0 22px 15px rgba(0,0,0,0.6)); }
+            100% { transform: scale(1.4) translateY(0); filter: drop-shadow(0 2px 3px rgba(0,0,0,0.4)); }
+        }
+        .jumping-token { animation: realLudoHop 0.22s ease-in-out; }
+
+        @keyframes tokenFloat {
+            0% { filter: drop-shadow(0 2px 4px rgba(255,255,255,0.2)); }
+            100% { filter: drop-shadow(0 4px 12px rgba(255,255,255,0.8)); }
+        }
+        .movable-token { animation: tokenFloat 0.4s infinite alternate ease-in-out; }
+        .movable-token path { stroke: #fff !important; stroke-width: 2.5px !important; }
+
+        #pause-overlay {
+            display: none;
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(4, 7, 16, 0.8);
+            border-radius: 16px;
+            z-index: 150;
+            color: #00f3ff;
+            font-size: 24px;
+            font-weight: bold;
+            align-items: center;
+            justify-content: center;
+            text-shadow: 0 0 10px #00f3ff;
+        }
+
+        #win-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(13, 21, 39, 0.95);
+            z-index: 1100;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            text-align: center;
+            border: 5px solid #00f3ff;
+            box-sizing: border-box;
+        }
+        #win-overlay h2 {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            text-shadow: 0 0 25px #00f3ff;
+            color: #00f3ff;
+        }
+
+        .confetti {
+            position: absolute;
+            width: 9px;
+            height: 9px;
+            opacity: 0.85;
+            animation: fall 3s infinite linear;
+        }
+        @keyframes fall {
+            0% { transform: translateY(-10vh) rotate(0deg); }
+            100% { transform: translateY(110vh) rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="home-screen">
+        <h1>🎲 LUDO NEO</h1>
+        <div class="btn-3d" onclick="startGame('pvp')">
+            <div class="btn-border"><div class="btn-top"><i class="fas fa-user-ninja"></i> PVP Mode</div></div>
+        </div>
+        <div class="btn-3d" onclick="startGame('pvr')">
+            <div class="btn-border"><div class="btn-top"><i class="fas fa-robot"></i> Robot Mode</div></div>
+        </div>
+    </div>
+
+    <div id="game-screen">
+        <div class="top-settings-bar">
+            <div class="btn-icon-3d settings-btn-color" onclick="openSettingsPopup()">
+                <div class="btn-icon-border"><div class="btn-icon-top"><i class="fas fa-cog"></i></div></div>
+            </div>
+        </div>
+
+        <div class="game-container" id="board-container">
+            <div id="pause-overlay">GAME PAUSED</div>
+
+            <div id="dice-0" class="ludo-dice-wrapper" onclick="rollDice(0)">
+                <div class="btn-icon-3d dice-green">
+                    <div class="btn-icon-border">
+                        <div class="btn-icon-top" id="dice-text-0">⚀</div>
+                    </div>
+                </div>
+            </div>
+            <div id="dice-1" class="ludo-dice-wrapper" onclick="rollDice(1)">
+                <div class="btn-icon-3d dice-red">
+                    <div class="btn-icon-border">
+                        <div class="btn-icon-top" id="dice-text-1">⚀</div>
+                    </div>
+                </div>
+            </div>
+            <div id="dice-2" class="ludo-dice-wrapper" onclick="rollDice(2)">
+                <div class="btn-icon-3d dice-yellow">
+                    <div class="btn-icon-border">
+                        <div class="btn-icon-top" id="dice-text-2">⚀</div>
+                    </div>
+                </div>
+            </div>
+            <div id="dice-3" class="ludo-dice-wrapper" onclick="rollDice(3)">
+                <div class="btn-icon-3d dice-blue">
+                    <div class="btn-icon-border">
+                        <div class="btn-icon-top" id="dice-text-3">⚀</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="board-wrapper">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600" width="100%" height="100%">
+                  <defs>
+                    <g id="star"><polygon points="0,-12 3.5,-3.5 12,-3.5 5,2 7.5,11 0,6 -7.5,11 -5,2 -12,-3.5 -3.5,-3.5" stroke-width="1" /></g>
+                    <g id="arrow"><path d="M -5,12 C -5,2 0,-3 0,-13 L -6,-11 L 2,-19 L 10,-11 L 4,-13 C 4,-3 -1,4 -1,12 Z" /></g>
+                    
+                    <radialGradient id="grad-green" cx="35%" cy="35%" r="65%"><stop offset="0%" stop-color="#a3e4d7"/><stop offset="40%" stop-color="#00b050"/><stop offset="100%" stop-color="#0e6226"/></radialGradient>
+                    <radialGradient id="grad-red" cx="35%" cy="35%" r="65%"><stop offset="0%" stop-color="#f9ebd2"/><stop offset="40%" stop-color="#ff2e2e"/><stop offset="100%" stop-color="#780b0b"/></radialGradient>
+                    <radialGradient id="grad-yellow" cx="35%" cy="35%" r="65%"><stop offset="0%" stop-color="#fffde7"/><stop offset="40%" stop-color="#ffea00"/><stop offset="100%" stop-color="#9a7d0a"/></radialGradient>
+                    <radialGradient id="grad-blue" cx="35%" cy="35%" r="65%"><stop offset="0%" stop-color="#d6eaf8"/><stop offset="40%" stop-color="#4ca8ed"/><stop offset="100%" stop-color="#0f416e"/></radialGradient>
+
+                    <g id="real-pawn">
+                      <path d="M -11,11 C -11,11 -9,3 -3,-4 L -4,-9 C -4,-9 -6,-10 -6,-13 C -6,-18 6,-18 6,-13 C 6,-10 4,-9 4,-9 L 3,-4 C 9,3 11,11 11,11 Z" stroke="#ffffff" stroke-width="2" />
+                      <circle cx="0" cy="-14" r="5.5" stroke="#ffffff" stroke-width="1.5" />
+                    </g>
+                  </defs>
+
+                  <rect x="0" y="0" width="600" height="600" fill="#ffffff" stroke="#333333" stroke-width="5" />
+                  <rect x="0" y="0" width="240" height="240" fill="#00b050" stroke="#333333" stroke-width="1.5" />
+                  <rect x="40" y="40" width="160" height="160" rx="20" fill="#1f7a3a" /><circle cx="80" cy="80" r="18" fill="#ffffff" /><circle cx="160" cy="80" r="18" fill="#ffffff" /><circle cx="80" cy="160" r="18" fill="#ffffff" /><circle cx="160" cy="160" r="18" fill="#ffffff" />
+                  <rect x="360" y="0" width="240" height="240" fill="#ff2e2e" stroke="#333333" stroke-width="1.5" />
+                  <rect x="400" y="40" width="160" height="160" rx="20" fill="#c01f1f" /><circle cx="440" cy="80" r="18" fill="#ffffff" /><circle cx="520" cy="80" r="18" fill="#ffffff" /><circle cx="440" cy="160" r="18" fill="#ffffff" /><circle cx="520" cy="160" r="18" fill="#ffffff" />
+                  <rect x="360" y="360" width="240" height="240" fill="#ffea00" stroke="#333333" stroke-width="1.5" />
+                  <rect x="400" y="400" width="160" height="160" rx="20" fill="#c99e12" /><circle cx="440" cy="440" r="18" fill="#ffffff" /><circle cx="520" cy="440" r="18" fill="#ffffff" /><circle cx="440" cy="440" r="18" fill="#ffffff" /><circle cx="520" cy="440" r="18" fill="#ffffff" />
+                  <rect x="0" y="360" width="240" height="240" fill="#4ca8ed" stroke="#333333" stroke-width="1.5" />
+                  <rect x="40" y="400" width="160" height="160" rx="20" fill="#1e6cb7" /><circle cx="80" cy="440" r="18" fill="#ffffff" /><circle cx="160" cy="440" r="18" fill="#ffffff" /><circle cx="80" cy="520" r="18" fill="#ffffff" /><circle cx="160" cy="520" r="18" fill="#ffffff" />
+                  <rect x="0" y="240" width="40" height="40" fill="#ffffff" stroke="#333333" /><rect x="40" y="240" width="40" height="40" fill="#00b050" stroke="#333333" /><rect x="80" y="240" width="40" height="40" fill="#ffffff" stroke="#333333" /><rect x="120" y="240" width="40" height="40" fill="#ffffff" stroke="#333333" /><rect x="160" y="240" width="40" height="40" fill="#ffffff" stroke="#333333" /><rect x="200" y="240" width="40" height="40" fill="#ffffff" stroke="#333333" /><rect x="0" y="280" width="40" height="40" fill="#ffffff" stroke="#333333" /><rect x="40" y="280" width="40" height="40" fill="#00b050" stroke="#333333" /><rect x="80" y="280" width="40" height="40" fill="#00b050" stroke="#333333" /><rect x="120" y="280" width="40" height="40" fill="#00b050" stroke="#333333" /><rect x="160" y="280" width="40" height="40" fill="#00b050" stroke="#333333" /><rect x="200" y="280" width="40" height="40" fill="#00b050" stroke="#333333" /><rect x="0" y="320" width="40" height="40" fill="#ffffff" stroke="#333333" /><rect x="40" y="320" width="40" height="40" fill="#ffffff" stroke="#333333" /><rect x="80" y="320" width="40" height="40" fill="#ffffff" stroke="#333333" /><rect x="120" y="320" width="40" height="40" fill="#ffffff" stroke="#333333" /><rect x="160" y="320" width="40" height="40" fill="#ffffff" stroke="#333333" /><rect x="200" y="320" width="40" height="40" fill="#ffffff" stroke="#333333" />
+                  <rect x="240" y="0" width="40" height="40" fill="#ffffff" stroke="#333333" /><rect x="240" y="40" width="40" height="40" fill="#ffffff" stroke="#333333" /><rect x="240" y="80" width="40" height="40" fill="#ffffff" stroke="#333333" /><rect x="240" y="120" width="40" height="40" fill="#ffffff" stroke="#333333" /><rect x="240" y="160" width="40" height="40" fill="#ffffff" stroke="#333333" /><rect x="240" y="200" width="40" height="40" fill="#ffffff" stroke="#333333" /><rect x="280" y="0" width="40" height="40" fill="#ffffff" stroke="#333333" /><rect x="280" y="40" width="40" height="40" fill="#ff2e2e" stroke="#333333" /><rect x="280" y="80" width="40" height="40" fill="#ff2e2e" stroke="#333333" /><rect x="280" y="120" width="40" height="40" fill="#ff2e2e" stroke="#333333" /><rect x="280" y="160" width="40" height="40" fill="#ff2e2e" stroke="#333333" /><rect x="280" y="200" width="40" height="40" fill="#ff2e2e" stroke="#333333" /><rect x="320" y="0" width="40" height="40" fill="#ffffff" stroke="#333333" /><rect x="320" y="40" width="40" height="40" fill="#ff2e2e" stroke="#333333" /><rect x="320" y="80" width="40" height="40" fill="#ffffff" stroke="#333333" /><rect x="320" y="120" width="40" height="40" fill="#ffffff" stroke="#333333" /><rect x="320" y="160" width="40" height="40" fill="#ffffff" stroke="#333333" /><rect x="320" y="200" width="40" height="40" fill="#ffffff" stroke="#333333" />
+                  <rect x="360" y="240" width="40" height="40" fill="#ffffff" stroke="#333333" /><rect x="400" y="240" width="40" height="40" fill="#ffffff" stroke="#333333" /><rect x="440" y="240" width="40" height="40" fill="#ffffff" stroke="#333333" /><rect x="480" y="240" width="40" height="40" fill="#ffffff" stroke="#333333" /><rect x="520" y="240" width="40" height="40" fill="#ffffff" stroke="#333333" /><rect x="560" y="240" width="40" height="40" fill="#ffffff" stroke="#333333" /><rect x="360" y="280" width="40" height="40" fill="#ffea00" stroke="#333333" /><rect x="400" y="280" width="40" height="40" fill="#ffea00" stroke="#333333" /><rect x="440" y="280" width="40" height="40" fill="#ffea00" stroke="#333333" /><rect x="480" y="280" width="40" height="40" fill="#ffea00" stroke="#333333" /><rect x="520" y="280" width="40" height="40" fill="#ffea00" stroke="#333333" /><rect x="560" y="280" width="40" height="40" fill="#ffffff" stroke="#333333" /><rect x="360" y="320" width="40" height="40" fill="#ffffff" stroke="#333333" /><rect x="400" y="320" width="40" height="40" fill="#ffffff" stroke="#333333" /><rect x="440" y="320" width="40" height="40" fill="#ffffff" stroke="#333333" /><rect x="480" y="320" width="40" height="40" fill="#ffffff" stroke="#333333" /><rect x="520" y="320" width="40" height="40" fill="#ffea00" stroke="#333333" /><rect x="560" y="320" width="40" height="40" fill="#ffffff" stroke="#333333" />
+                  <rect x="240" y="360" width="40" height="40" fill="#ffffff" stroke="#333333" /><rect x="240" y="400" width="40" height="40" fill="#ffffff" stroke="#333333" /><rect x="240" y="440" width="40" height="40" fill="#ffffff" stroke="#333333" /><rect x="240" y="480" width="40" height="40" fill="#ffffff" stroke="#333333" /><rect x="240" y="520" width="40" height="40" fill="#4ca8ed" stroke="#333333" /><rect x="240" y="560" width="40" height="40" fill="#ffffff" stroke="#333333" /><rect x="280" y="360" width="40" height="40" fill="#4ca8ed" stroke="#333333" /><rect x="280" y="400" width="40" height="40" fill="#4ca8ed" stroke="#333333" /><rect x="280" y="440" width="40" height="40" fill="#4ca8ed" stroke="#333333" /><rect x="280" y="480" width="40" height="40" fill="#4ca8ed" stroke="#333333" /><rect x="280" y="520" width="40" height="40" fill="#4ca8ed" stroke="#333333" /><rect x="280" y="560" width="40" height="40" fill="#ffffff" stroke="#333333" /><rect x="320" y="360" width="40" height="40" fill="#ffffff" stroke="#333333" /><rect x="320" y="400" width="40" height="40" fill="#ffffff" stroke="#333333" /><rect x="320" y="440" width="40" height="40" fill="#ffffff" stroke="#333333" /><rect x="320" y="480" width="40" height="40" fill="#ffffff" stroke="#333333" /><rect x="320" y="520" width="40" height="40" fill="#ffffff" stroke="#333333" /><rect x="320" y="560" width="40" height="40" fill="#ffffff" stroke="#333333"px;" />
+
+                  <polygon points="240,240 300,300 240,360" fill="#00b050" stroke="#333333" />
+                  <polygon points="240,240 360,240 300,300" fill="#ff2e2e" stroke="#333333" />
+                  <polygon points="360,240 360,360 300,300" fill="#ffea00" stroke="#333333" />
+                  <polygon points="240,360 360,360 300,300" fill="#4ca8ed" stroke="#333333" />
+
+                  <use href="#star" x="60" y="260" fill="#7bed9f" stroke="#1f7a3a" /><use href="#star" x="340" y="60" fill="#ff7675" stroke="#c01f1f" /><use href="#star" x="540" y="340" fill="#fff200" stroke="#c99e12" /><use href="#star" x="260" y="540" fill="#00ffff" stroke="#1e6cb7" />
+                  <use href="#arrow" x="20" y="300" transform="rotate(90, 20, 300)" fill="#00b050" /><use href="#arrow" x="300" y="20" transform="rotate(180, 300, 20)" fill="#ff2e2e" /><use href="#arrow" x="580" y="300" transform="rotate(270, 580, 300)" fill="#ffea00" /><use href="#arrow" x="300" y="580" fill="#4ca8ed" />
+
+                  <g id="ludo-tokens"></g>
+                </svg>
+            </div>
+        </div>
+    </div>
+
+    <div id="settings-popup-overlay" onclick="closeSettingsPopup(event)">
+        <div class="settings-popup-content" onclick="event.stopPropagation()">
+            <h3>SETTINGS</h3>
+            <div class="settings-buttons-row">
+                <div class="btn-icon-3d settings-btn-color" id="sound-toggle-btn" onclick="toggleSound()">
+                    <div class="btn-icon-border"><div class="btn-icon-top"><i id="sound-icon" class="fas fa-volume-up"></i></div></div>
+                </div>
+                <div class="btn-icon-3d settings-btn-color" id="pause-toggle-btn" onclick="togglePause()">
+                    <div class="btn-icon-border"><div class="btn-icon-top"><i id="pause-icon" class="fas fa-pause"></i></div></div>
+                </div>
+                <div class="btn-icon-3d settings-btn-color" onclick="backToMenu()">
+                    <div class="btn-icon-border"><div class="btn-icon-top"><i class="fas fa-arrow-left"></i></div></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="win-overlay">
+        <h2 id="win-message">GREEN WINS!</h2>
+        <p style="font-size: 1.3rem; color: #00f3ff; margin-bottom: 30px;">🏆 All 4 Tokens Reached Home First! 🏆</p>
+        
+        <div class="btn-3d" onclick="backToMenu()">
+            <div class="btn-border"><div class="btn-top"><i class="fas fa-home"></i> Home</div></div>
+        </div>
+        <div class="btn-3d" onclick="resetGame()">
+            <div class="btn-border"><div class="btn-top"><i class="fas fa-forward"></i> Next</div></div>
+        </div>
+    </div>
+
+<script>
+    const sndMove = new Audio('https://files.catbox.moe/ymi686.mp3');
+    const sndRoll = new Audio('https://files.catbox.moe/jzk8kc.mp3');
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    
+    let isSoundMuted = false;
+    let isGamePaused = false;
+
+    function playSound(type) {
+        if (isSoundMuted) return;
+        if (type === 'move') { sndMove.currentTime = 0; sndMove.play().catch(e => {}); return; }
+        if (type === 'roll') { sndRoll.currentTime = 0; sndRoll.play().catch(e => {}); return; }
+
+        if (!audioCtx) return;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain); gain.connect(audioCtx.destination);
+        
+        if (type === 'kill') {
+            osc.type = 'sawtooth'; osc.frequency.setValueAtTime(320, audioCtx.currentTime);
+            osc.frequency.linearRampToValueAtTime(60, audioCtx.currentTime + 0.25);
+            gain.gain.setValueAtTime(0.15, audioCtx.currentTime); osc.start(); osc.stop(audioCtx.currentTime + 0.25);
+        } else if (type === 'win') {
+            osc.type = 'triangle'; osc.frequency.setValueAtTime(440, audioCtx.currentTime);
+            osc.frequency.setValueAtTime(660, audioCtx.currentTime + 0.1);
+            osc.frequency.setValueAtTime(880, audioCtx.currentTime + 0.2);
+            gain.gain.setValueAtTime(0.15, audioCtx.currentTime); osc.start(); osc.stop(audioCtx.currentTime + 0.5);
+        }
+    }
+
+    function openSettingsPopup() {
+        const overlay = document.getElementById('settings-popup-overlay');
+        overlay.style.display = 'flex';
+        setTimeout(() => { overlay.classList.add('show'); }, 10);
+    }
+
+    function closeSettingsPopup(event) {
+        const overlay = document.getElementById('settings-popup-overlay');
+        overlay.classList.remove('show');
+        setTimeout(() => { overlay.style.display = 'none'; }, 300);
+    }
+
+    function toggleSound() {
+        isSoundMuted = !isSoundMuted;
+        const icon = document.getElementById('sound-icon');
+        icon.className = isSoundMuted ? "fas fa-volume-mute" : "fas fa-volume-up";
+    }
+
+    function togglePause() {
+        if (isAnimating || hasWinOverlay) return;
+        isGamePaused = !isGamePaused;
+        const overlay = document.getElementById('pause-overlay');
+        const icon = document.getElementById('pause-icon');
+        
+        if (isGamePaused) {
+            overlay.style.display = "flex";
+            icon.className = "fas fa-play";
+        } else {
+            overlay.style.display = "none";
+            icon.className = "fas fa-pause";
+            closeSettingsPopup();
+            checkBotAutoPlay();
+        }
+    }
+
+    const outerTrack = [
+        {x:0, y:6}, {x:1, y:6}, {x:2, y:6}, {x:3, y:6}, {x:4, y:6}, {x:5, y:6},
+        {x:6, y:5}, {x:6, y:4}, {x:6, y:3}, {x:6, y:2}, {x:6, y:1}, {x:6, y:0}, {x:7, y:0},
+        {x:8, y:0}, {x:8, y:1}, {x:8, y:2}, {x:8, y:3}, {x:8, y:4}, {x:8, y:5},
+        {x:9, y:6}, {x:10, y:6}, {x:11, y:6}, {x:12, y:6}, {x:13, y:6}, {x:14, y:6}, {x:14, y:7},
+        {x:14, y:8}, {x:13, y:8}, {x:12, y:8}, {x:11, y:8}, {x:10, y:8}, {x:9, y:8},
+        {x:8, y:9}, {x:8, y:10}, {x:8, y:11}, {x:8, y:12}, {x:8, y:13}, {x:8, y:14}, {x:7, y:14},
+        {x:6, y:14}, {x:6, y:13}, {x:6, y:12}, {x:6, y:11}, {x:6, y:10}, {x:6, y:9},
+        {x:5, y:8}, {x:4, y:8}, {x:3, y:8}, {x:2, y:8}, {x:1, y:8}, {x:0, y:8}, {x:0, y:7}
+    ];
+
+    const players = [
+        { id: 0, name: 'GREEN', grad: 'url(#grad-green)', homes: [{x:80,y:80},{x:160,y:80},{x:80,y:160},{x:160,y:160}] },
+        { id: 1, name: 'RED', grad: 'url(#grad-red)', homes: [{x:440,y:80},{x:520,y:80},{x:440,y:160},{x:520,y:160}] },
+        { id: 2, name: 'YELLOW', grad: 'url(#grad-yellow)', homes: [{x:440,y:440},{x:520,y:440},{x:440,y:520},{x:520,y:520}] },
+        { id: 3, name: 'BLUE', grad: 'url(#grad-blue)', homes: [{x:80,y:440},{x:160,y:440},{x:80,y:520},{x:160,y:520}] }
+    ];
+
+    const safeTrackIndices = [1, 9, 14, 22, 27, 35, 40, 48];
+    let playerPaths = []; 
+    let gameMode = 'pvp';
+    let currentTurn = 0, diceValue = 0, hasRolled = false, tokenStates = [], isAnimating = false, hasWinOverlay = false;
+    let activePlayerList = [0, 1, 2, 3];
+
+    // મોટા લુડો મીંડાની યાદી
+    const diceFaces = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
+
+    function buildRealLudoPaths() {
+        playerPaths = [];
+        let p0 = []; for(let i=1; i<=51; i++) p0.push(outerTrack[i]); p0.push(outerTrack[0]); for(let x=1; x<=5; x++) p0.push({x: x, y: 7}); p0.push({x: 6, y: 7}); playerPaths.push(p0);
+        let p1 = []; for(let i=14; i<52; i++) p1.push(outerTrack[i]); for(let i=0; i<=12; i++) p1.push(outerTrack[i]); for(let y=1; y<=5; y++) p1.push({x: 7, y: y}); p1.push({x: 7, y: 6}); playerPaths.push(p1);
+        let p2 = []; for(let i=27; i<52; i++) p2.push(outerTrack[i]); for(let i=0; i<=25; i++) p2.push(outerTrack[i]); for(let x=13; x>=9; x--) p2.push({x: x, y: 7}); p2.push({x: 8, y: 7}); playerPaths.push(p2);
+        let p3 = []; for(let i=40; i<52; i++) p3.push(outerTrack[i]); for(let i=0; i<=38; i++) p3.push(outerTrack[i]); for(let y=13; y>=9; y--) p3.push({x: 7, y: y}); p3.push({x: 7, y: 8}); playerPaths.push(p3);
+    }
+
+    function startGame(mode) {
+        if (audioCtx.state === 'suspended') { audioCtx.resume(); }
+        gameMode = mode;
+        isGamePaused = false;
+        hasWinOverlay = false;
+        document.getElementById('pause-overlay').style.display = "none";
+        document.getElementById('pause-icon').className = "fas fa-pause";
+        document.getElementById('home-screen').style.display = 'none';
+        document.getElementById('game-screen').style.display = 'flex';
+        document.getElementById('win-overlay').style.display = 'none';
+        closeSettingsPopup();
+        activePlayerList = (gameMode === 'pvp') ? [0, 2] : [0, 1, 2, 3];
+        buildRealLudoPaths();
+        currentTurn = activePlayerList[0]; hasRolled = false; isAnimating = false;
+        initGame();
+    }
+
+    function backToMenu() {
+        closeSettingsPopup();
+        document.getElementById('game-screen').style.display = 'none';
+        document.getElementById('win-overlay').style.display = 'none';
+        document.getElementById('home-screen').style.display = 'flex';
+    }
+
+    function initGame() {
+        tokenStates = [];
+        const container = document.getElementById('ludo-tokens');
+        container.innerHTML = '';
+        
+        players.forEach(p => {
+            let pTokens = [];
+            const isActive = activePlayerList.includes(p.id);
+            document.getElementById(`dice-${p.id}`).style.display = isActive ? 'block' : 'none';
+
+            for (let i = 0; i < 4; i++) {
+                pTokens.push({ inHome: true, stepCount: -1, isFinished: false });
+                if (isActive) {
+                    const tokenGroup = document.createElementNS("http://www.w3.org/2000/svg", "g");
+                    tokenGroup.setAttribute("id", `token-group-${p.id}-${i}`);
+
+                    const pawn = document.createElementNS("http://www.w3.org/2000/svg", "use");
+                    pawn.setAttribute("href", "#real-pawn");
+                    pawn.setAttribute("id", `token-${p.id}-${i}`);
+                    pawn.setAttribute("class", "player-token");
+                    pawn.setAttribute("fill", p.grad);
+                    pawn.onclick = () => handleTokenClick(p.id, i);
+                    
+                    tokenGroup.appendChild(pawn);
+                    container.appendChild(tokenGroup);
+                }
+            }
+            tokenStates.push(pTokens);
+        });
+        repositionAllTokens();
+        updateDiceUI();
+    }
+
+    function rollDice(pId) {
+        if (isGamePaused || hasRolled || pId !== currentTurn || isAnimating) return;
+        hasRolled = true; 
+        
+        const diceEl = document.getElementById(`dice-${pId}`);
+        diceEl.classList.add('dice-shaking');
+        playSound('roll');
+
+        let rollInterval = setInterval(() => {
+            document.getElementById(`dice-text-${pId}`).innerText = diceFaces[Math.floor(Math.random() * 6)];
+        }, 60);
+
+        setTimeout(() => {
+            clearInterval(rollInterval);
+            diceEl.classList.remove('dice-shaking');
+            diceValue = Math.floor(Math.random() * 6) + 1;
+            document.getElementById(`dice-text-${pId}`).innerText = diceFaces[diceValue - 1];
+
+            if (!hasValidMoves(pId)) {
+                setTimeout(nextTurn, 900);
+            } else {
+                if (gameMode === 'pvr' && pId !== 0) {
+                    setTimeout(() => botSelectToken(pId), 600);
+                } else {
+                    highlightTokens(pId, true);
+                }
+            }
+        }, 450);
+    }
+
+    function hasValidMoves(pId) {
+        return tokenStates[pId].some(t => {
+            if (t.isFinished) return false;
+            if (t.inHome) return diceValue === 6;
+            return (t.stepCount + diceValue) <= 56;
+        });
+    }
+
+    function highlightTokens(pId, active) {
+        for (let i = 0; i < 4; i++) {
+            const el = document.getElementById(`token-${pId}-${i}`);
+            if (el) {
+                let state = tokenStates[pId][i];
+                if (active && !state.isFinished && ((state.inHome && diceValue === 6) || (!state.inHome && (state.stepCount + diceValue) <= 56))) {
+                    el.classList.add('movable-token');
+                } else {
+                    el.classList.remove('movable-token');
+                }
+            }
+        }
+    }
+
+    function botSelectToken(botId) {
+        if (isGamePaused) return;
+        let validTokens = [];
+        for (let i = 0; i < 4; i++) {
+            let state = tokenStates[botId][i];
+            if (!state.isFinished && ((state.inHome && diceValue === 6) || (!state.inHome && (state.stepCount + diceValue) <= 56))) {
+                validTokens.push(i);
+            }
+        }
+        if (validTokens.length > 0) {
+            let chosenToken = validTokens[Math.floor(Math.random() * validTokens.length)];
+            executeMove(botId, chosenToken);
+        }
+    }
+
+    function handleTokenClick(pId, tId) {
+        if (isGamePaused || !hasRolled || pId !== currentTurn || isAnimating) return;
+        if (gameMode === 'pvr' && pId !== 0) return;
+
+        let state = tokenStates[pId][tId];
+        if (state.isFinished) return;
+        if (state.inHome && diceValue !== 6) return;
+        if (!state.inHome && (state.stepCount + diceValue) > 56) return;
+
+        highlightTokens(pId, false);
+        executeMove(pId, tId);
+    }
+
+    function executeMove(pId, tId) {
+        isAnimating = true;
+        let state = tokenStates[pId][tId];
+        let totalSteps = state.inHome ? 1 : diceValue;
+        animateStepByStep(pId, tId, totalSteps);
+    }
+
+    function animateStepByStep(pId, tId, stepsLeft) {
+        if (isGamePaused) {
+            setTimeout(() => { animateStepByStep(pId, tId, stepsLeft); }, 200);
+            return;
+        }
+
+        let state = tokenStates[pId][tId];
+        if (stepsLeft <= 0) {
+            if (state.stepCount === 56) state.isFinished = true;
+            let killedSomeone = checkAndKillToken(pId, tId);
+            isAnimating = false;
+            repositionAllTokens();
+            if (checkWinCondition(pId)) return; 
+
+            if (diceValue === 6 || killedSomeone) {
+                hasRolled = false;
+                updateDiceUI();
+                checkBotAutoPlay();
+            } else {
+                nextTurn();
+            }
+            return;
+        }
+
+        if (state.inHome) { state.inHome = false; state.stepCount = 0; } else { state.stepCount++; }
+        repositionAllTokens();
+        playSound('move');
+
+        const tokenEl = document.getElementById(`token-${pId}-${tId}`);
+        if(tokenEl) {
+            tokenEl.classList.add('jumping-token');
+            setTimeout(() => tokenEl.classList.remove('jumping-token'), 210);
+        }
+        setTimeout(() => { animateStepByStep(pId, tId, stepsLeft - 1); }, 240);
+    }
+
+    function checkAndKillToken(movingPid, movingTid) {
+        let mState = tokenStates[movingPid][movingTid];
+        if (mState.isFinished || mState.inHome || mState.stepCount > 50) return false;
+
+        let mCoord = playerPaths[movingPid][mState.stepCount];
+        let isOnSafeStar = safeTrackIndices.some(idx => outerTrack[idx].x === mCoord.x && outerTrack[idx].y === mCoord.y);
+        if (isOnSafeStar) return false;
+
+        let cutTriggered = false;
+        activePlayerList.forEach(pId => {
+            if (pId === movingPid) return;
+            for (let i = 0; i < 4; i++) {
+                let oppState = tokenStates[pId][i];
+                if (!oppState.inHome && !oppState.isFinished && oppState.stepCount <= 50) {
+                    let oppCoord = playerPaths[pId][oppState.stepCount];
+                    if (oppCoord.x === mCoord.x && oppCoord.y === mCoord.y) {
+                        oppState.inHome = true; oppState.stepCount = -1; cutTriggered = true;
+                    }
+                }
+            }
+        });
+
+        if (cutTriggered) {
+            playSound('kill');
+            document.getElementById('board-container').classList.add('screen-shake');
+            setTimeout(() => { document.getElementById('board-container').classList.remove('screen-shake'); }, 300);
+            return true;
+        }
+        return false;
+    }
+
+    function repositionAllTokens() {
+        const coordMap = {};
+        players.forEach(p => {
+            if (!activePlayerList.includes(p.id)) return;
+            for (let i = 0; i < 4; i++) {
+                let state = tokenStates[p.id][i];
+                let cx = 0, cy = 0, key = "";
+
+                if (state.inHome) {
+                    cx = players[p.id].homes[i].x; cy = players[p.id].homes[i].y;
+                    key = `home-${p.id}-${i}`;
+                } else if (state.isFinished) {
+                    const cenOffsets = [{x:-14,y:-14}, {x:14,y:-14}, {x:14,y:14}, {x:-14,y:14}];
+                    cx = 300 + cenOffsets[p.id].x; cy = 300 + cenOffsets[p.id].y;
+                    key = `finished-${p.id}`;
+                } else {
+                    let coord = playerPaths[p.id][state.stepCount];
+                    cx = (coord.x * 40) + 20; cy = (coord.y * 40) + 20;
+                    key = `${coord.x}-${coord.y}`;
+                }
+
+                if (!coordMap[key]) coordMap[key] = [];
+                coordMap[key].push({ pId: p.id, tId: i, baseCx: cx, baseCy: cy, inHome: state.inHome, isFinished: state.isFinished });
+            }
+        });
+
+        Object.keys(coordMap).forEach(key => {
+            const list = coordMap[key];
+            let count = list.length;
+            list.forEach((item, index) => {
+                let offsetX = 0, offsetY = 0;
+                if (!item.inHome && !item.isFinished && count > 1) {
+                    if (count === 2) { offsetX = (index === 0) ? -6 : 6; }
+                    else if (count === 3) { if (index === 0) { offsetX = -6; offsetY = 6; } else if (index === 1) { offsetX = 6; offsetY = 6; } else { offsetX = 0; offsetY = -6; } }
+                    else { if (index === 0) { offsetX = -6; offsetY = -6; } else if (index === 1) { offsetX = 6; offsetY = -6; } else if (index === 2) { offsetX = -6; offsetY = 6; } else { offsetX = 6; offsetY = 6; } }
+                }
+                const groupEl = document.getElementById(`token-group-${item.pId}-${item.tId}`);
+                if (groupEl) { groupEl.setAttribute("transform", `translate(${item.baseCx + offsetX}, ${item.baseCy + offsetY})`); }
+            });
+        });
+    }
+
+    function checkWinCondition(pId) {
+        let allFinished = tokenStates[pId].every(t => t.isFinished);
+        if (allFinished) {
+            playSound('win');
+            hasWinOverlay = true;
+            document.getElementById('win-message').innerText = `${players[pId].name} WINS THE GAME!`;
+            document.getElementById('win-overlay').style.display = 'flex';
+            createConfetti();
+            return true;
+        }
+        return false;
+    }
+
+    function createConfetti() {
+        const overlay = document.getElementById('win-overlay');
+        for (let i = 0; i < 60; i++) {
+            let confetti = document.createElement('div');
+            confetti.className = 'confetti';
+            confetti.style.left = Math.random() * 100 + 'vw';
+            confetti.style.backgroundColor = ['#ff2e2e','#00b050','#ffea00','#4ca8ed','#00f3ff'][Math.floor(Math.random() * 5)];
+            confetti.style.animationDelay = Math.random() * 2 + 's';
+            confetti.style.transform = `scale(${Math.random() * 1.2 + 0.5})`;
+            overlay.appendChild(confetti);
+        }
+    }
+
+    function nextTurn() {
+        if (isGamePaused) return;
+        let currentIdx = activePlayerList.indexOf(currentTurn);
+        let nextIdx = (currentIdx + 1) % activePlayerList.length;
+        currentTurn = activePlayerList[nextIdx];
+        hasRolled = false;
+        updateDiceUI();
+        checkBotAutoPlay();
+    }
+
+    function checkBotAutoPlay() {
+        if (isGamePaused) return;
+        if (gameMode === 'pvr' && currentTurn !== 0) {
+            setTimeout(() => { rollDice(currentTurn); }, 900);
+        }
+    }
+
+    function updateDiceUI() {
+        players.forEach(p => {
+            const dice = document.getElementById(`dice-${p.id}`);
+            dice.classList.remove('active');
+            if (!hasRolled) {
+                document.getElementById(`dice-text-${p.id}`).innerText = '⚀';
+            }
+        });
+        document.getElementById(`dice-${currentTurn}`).classList.add('active');
+    }
+
+    function resetGame() {
+        hasWinOverlay = false;
+        isGamePaused = false;
+        document.getElementById('win-overlay').style.display = 'none';
+        document.getElementById('pause-overlay').style.display = "none";
+        document.getElementById('pause-icon').className = "fas fa-pause";
+        currentTurn = activePlayerList[0]; hasRolled = false; isAnimating = false;
+        initGame();
+        checkBotAutoPlay();
+    }
+</script>
+</body>
+</html>
