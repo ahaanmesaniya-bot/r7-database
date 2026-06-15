@@ -28,6 +28,14 @@
       "type": "Tournament",
       "url": "https://ahaanmesaniya-bot.github.io/r7-database/games/ludo.html",
       "openDirect": false
+    },
+    {
+      "id": "item_1781518254142",
+      "title": "Fruit Ninja",
+      "logo": "https://files.catbox.moe/m0pzud.jpeg",
+      "type": "Game",
+      "url": "https://ahaanmesaniya-bot.github.io/r7-database/games/fruit-ninja.html",
+      "openDirect": false
     }
   ],
   "aboutUs": "ફધબધધબધભ",
