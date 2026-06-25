@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Neon Arena: Ultimate 30 Bots Update</title>
+    <style>
+        * { box-sizing: border-box; user-select: none; -webkit-user-select: none; margin: 0; padding: 0; }
+        body { background: #05030a; font-family: 'Segoe UI', sans-serif; color: #fff; overflow: hidden; display: flex; align-items: center; justify-content: center; height: 100vh; }
+        #game-container { width: 100vw; height: 100vh; position: relative; display: none; }
+        canvas { display: block; background: #05030d; }
+        
+        /* Lobby Home Screen */
+        #home-screen { position: absolute; width: 100%; height: 100%; background: radial-gradient(circle, #150d2a 0%, #05030a 100%); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 100; gap: 15px; overflow-y: auto; padding: 20px; }
+        #home-screen h1 { font-size: 2.8rem; color: #00f0ff; text-shadow: 0 0 20px #00f0ff; text-align: center; margin-bottom: -5px; }
+        .lobby-panel { background: rgba(255,255,255,0.03); border: 1px solid rgba(0,240,255,0.2); padding: 18px; border-radius: 15px; display: flex; flex-direction: column; gap: 12px; width: 330px; text-align: center; }
+        .btn-main { background: linear-gradient(135deg, #00ffff, #0055ff); border: none; color: white; padding: 14px 30px; font-size: 1.25rem; font-weight: bold; border-radius: 8px; cursor: pointer; box-shadow: 0 0 20px rgba(0,240,255,0.4); width: 100%; }
+        .btn-main:active { transform: scale(0.95); }
+        .btn-orange { background: linear-gradient(135deg, #ff9900, #cc6600); box-shadow: 0 0 15px rgba(255, 153, 0, 0.4); }
+        
+        .color-picker-box { display: flex; align-items: center; justify-content: center; gap: 15px; }
+        #playerColorInput { width: 55px; height: 35px; border: 2px solid #00f0ff; background: transparent; border-radius: 8px; cursor: pointer; }
+
+        /* Game UI Buttons (Top Left Side) */
+        #top-ui { position: absolute; top: 20px; left: 20px; z-index: 10; pointer-events: auto; display: flex; flex-direction: column; gap: 10px; }
+        .btn-home { background: rgba(255, 51, 102, 0.2); border: 1px solid #ff3366; color: #ff3366; padding: 8px 16px; font-size: 0.95rem; font-weight: bold; border-radius: 6px; cursor: pointer; backdrop-filter: blur(5px); width: 140px; text-align: center; }
+        .btn-bag { background: rgba(0, 240, 255, 0.2); border: 1px solid #00f0ff; color: #00f0ff; padding: 8px 16px; font-size: 0.95rem; font-weight: bold; border-radius: 6px; cursor: pointer; backdrop-filter: blur(5px); width: 140px; text-align: center; }
+        
+        /* Weapon Inventory UI */
+        #inventory-container { position: absolute; top: 120px; left: 20px; background: rgba(8, 5, 20, 0.96); border: 2px solid #00f0ff; box-shadow: 0 0 25px rgba(0, 240, 255, 0.4); padding: 10px; border-radius: 14px; z-index: 10; display: none; align-items: center; gap: 10px; max-width: calc(100vw - 40px); overflow-x: auto; white-space: nowrap; -webkit-overflow-scrolling: touch; }
+        .inv-slot { width: 68px; height: 68px; background: rgba(255, 255, 255, 0.05); border: 1px dashed #00f0ff; border-radius: 10px; display: inline-flex; flex-direction: column; align-items: center; justify-content: center; font-size: 0.72rem; font-weight: bold; cursor: pointer; flex-shrink: 0; text-align: center; color: #ccc; transition: all 0.15s ease; }
+        .inv-slot .icon { font-size: 1.4rem; margin-bottom: 2px; }
+        .inv-slot.active-weapon { border: 2px solid #00ff00; background: rgba(0, 255, 0, 0.2); box-shadow: 0 0 12px rgba(0,255,0,0.4); color: #fff; transform: scale(1.04); }
+
+        /* Gun Shop Modal */
+        #shop-modal { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(8, 6, 18, 0.98); border: 2px solid #ff9900; box-shadow: 0 0 35px rgba(255,153,0,0.5); padding: 22px; border-radius: 15px; display: none; z-index: 120; text-align: center; width: 350px; max-height: 85vh; overflow-y: auto; }
+        #shop-modal h2 { margin-bottom: 5px; color: #ff9900; text-shadow: 0 0 10px #ff9900; }
+        .shop-item { background: rgba(255,255,255,0.04); border: 1px solid #444; padding: 12px; margin: 8px 0; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; text-align: left; }
+        .shop-item.owned { border-color: #00ff00; background: rgba(0,255,0,0.05); }
+        .close-shop { background: #ff3366; border: none; color: white; padding: 9px 25px; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 15px; width: 100%; }
+    </style>
+</head>
+<body>
+
+    <div id="home-screen">
+        <h1>🌌 NEON ARENA v5.5</h1>
+        <p style="color: #00f0ff; font-weight: bold; text-shadow:0 0 10px rgba(0,240,255,0.4);">⚔️ 30 BOTS MASSIVE BATTLE UPDATE</p>
+        
+        <div class="lobby-panel">
+            <div style="font-size: 1.3rem; font-weight: bold; color: #ffff00;">💰 YOUR COINS: <span id="lobby-coins">0</span></div>
+            
+            <div>
+                <p style="font-size: 0.85rem; color: #aaa; margin-bottom: 5px; text-align:left;">🎨 Player Color:</p>
+                <div class="color-picker-box">
+                    <input type="color" id="playerColorInput" value="#00f0ff">
+                    <span style="font-size:0.85rem; color:#00f0ff; font-weight:bold;">Custom Color</span>
+                </div>
+            </div>
+        </div>
+        
+        <div style="width: 330px; display: flex; flex-direction: column; gap: 10px;">
+            <button class="btn-main" onclick="startGame()">🚀 ENTER ARENA</button>
+            <button class="btn-main btn-orange" onclick="toggleShop(true)">🛒 GUN SHOP</button>
+        </div>
+    </div>
+
+    <div id="game-container">
+        <div id="top-ui">
+            <button class="btn-home" onclick="exitToHome()">🏠 HOME SCREEN</button>
+            <button class="btn-bag" onclick="toggleBag()">🎒 BAG / હથિયાર</button>
+        </div>
+
+        <div id="inventory-container">
+            <div id="slot-gun-normal" class="inv-slot active-weapon" onclick="selectWeapon('normal')"><span class="icon">🔫</span><span>Normal</span></div>
+            <div id="slot-gun-double" class="inv-slot" onclick="selectWeapon('double')"><span class="icon">♊</span><span>Double</span></div>
+            <div id="slot-gun-triple" class="inv-slot" onclick="selectWeapon('triple')"><span class="icon">🔱</span><span>Triple</span></div>
+            <div id="slot-gun-penta" class="inv-slot" onclick="selectWeapon('penta')"><span class="icon">✴️</span><span>Penta</span></div>
+            <div id="slot-gun-laser" class="inv-slot" onclick="selectWeapon('laser')"><span class="icon">⚡</span><span>Laser</span></div>
+            <div id="slot-gun-fire" class="inv-slot" onclick="selectWeapon('fire')"><span class="icon">☄️</span><span>Fire</span></div>
+            <div id="slot-gun-ice" class="inv-slot" onclick="selectWeapon('ice')"><span class="icon">❄️</span><span>Ice</span></div>
+            <div id="slot-gun-bomb" class="inv-slot" onclick="selectWeapon('bomb')"><span class="icon">💣</span><span>Bomb</span></div>
+        </div>
+
+        <div id="shop-modal">
+            <h2>🛒 GUN MARKET</h2>
+            <p style="color:#aaa; font-size:0.8rem; margin-bottom:12px;">Purchase powerful advanced weapons</p>
+            <div id="shop-items-list"></div>
+            <button class="close-shop" onclick="toggleShop(false)">GO BACK</button>
+        </div>
+
+        <canvas id="gameCanvas"></canvas>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        function resizeCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+        resizeCanvas(); window.addEventListener('resize', resizeCanvas);
+
+        const MAP_WIDTH = 2500; const MAP_HEIGHT = 2500;
+        const TRACK_RANGE = 380; 
+
+        let player = null; let bots = []; let bullets = []; let particles = []; let foods = []; let shields = [];
+        let medkits = []; let floatingTexts = [];
+        const weaponList = ['normal', 'double', 'triple', 'penta', 'laser', 'fire', 'ice', 'bomb'];
+
+        // Local Storage Coins & Weapons Data
+        let totalCoins = parseInt(localStorage.getItem('neon_arena_coins')) || 0;
+        let savedWeapons = JSON.parse(localStorage.getItem('neon_arena_weapons'));
+        let unlockedWeapons = { 
+            normal: true, double: false, triple: false, penta: false, laser: false, fire: false, ice: false, bomb: false 
+        };
+        if (savedWeapons) { Object.assign(unlockedWeapons, savedWeapons); } 
+        let activeWeapon = localStorage.getItem('neon_arena_active') || 'normal';
+
+        let isGameRunning = false; let fireFlag = false; let isShopOpen = false; let isBagOpen = false;
+        let camera = { x: 0, y: 0 };
+        let joystick = { active: false, startX: 0, startY: 0, curX: 0, curY: 0, id: null };
+        let rightSideTouchId = null; 
+
+        const shopDatabase = [
+            { id: 'double', name: 'Double Shooter ♊', cost: 50, desc: 'Fires 2 parallel bullets' },
+            { id: 'triple', name: 'Triple Shooter 🔱', cost: 100, desc: 'Wide spread in 3 directions' },
+            { id: 'penta', name: 'Penta Shooter ✴️', cost: 200, desc: 'Heavy burst of 5 bullets' },
+            { id: 'laser', name: 'Laser Gun ⚡', cost: 350, desc: 'High-speed energy laser beam' },
+            { id: 'fire', name: 'Fire Gun ☄️', cost: 450, desc: 'Shoots continuous fire flames' },
+            { id: 'ice', name: 'Ice Gun ❄️', cost: 550, desc: 'Freezes enemies for 1.5 seconds' },
+            { id: 'bomb', name: 'Bomb Gun 💣', cost: 650, desc: 'Explodes and bursts 8 shrapnels' }
+        ];
+
+        let audioCtx = null;
+        function initAudio() {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+        }
+
+        function playShootSound() {
+            if (!audioCtx) return;
+            let osc = audioCtx.createOscillator();
+            let gain = audioCtx.createGain();
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.type = 'triangle';
+            let freq = (activeWeapon === 'fire') ? 280 : (activeWeapon === 'ice' ? 620 : 450);
+            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(60, audioCtx.currentTime + 0.1);
+            gain.gain.setValueAtTime(activeWeapon === 'fire' ? 0.05 : 0.12, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+            osc.start(); osc.stop(audioCtx.currentTime + 0.1);
+        }
+
+        function getRandomNeonColor() {
+            const colors = ['#ff3366', '#ff00ff', '#00ff00', '#ff9900', '#ffff00', '#00ffcc', '#9933ff'];
+            return colors[Math.floor(Math.random() * colors.length)];
+        }
+
+        function updateLobbyUI() {
+            document.getElementById('lobby-coins').innerText = totalCoins;
+            renderShop();
+        }
+
+        function renderShop() {
+            const listContainer = document.getElementById('shop-items-list');
+            listContainer.innerHTML = '';
+            shopDatabase.forEach(item => {
+                let isOwned = unlockedWeapons[item.id];
+                let div = document.createElement('div');
+                div.className = 'shop-item' + (isOwned ? ' owned' : '');
+                div.onclick = () => buyWeapon(item.id, item.cost);
+                div.innerHTML = `
+                    <div>
+                        <strong style="color:${isOwned ? '#00ff00' : '#fff'}">${item.name}</strong><br>
+                        <span style="font-size:0.75rem; color:#aaa;">${item.desc}</span>
+                    </div>
+                    <span style="font-weight:bold; color:#ff9900;">${isOwned ? 'OWNED ✔️' : item.cost + ' 💰'}</span>
+                `;
+                listContainer.appendChild(div);
+            });
+        }
+        updateLobbyUI();
+
+        class Fighter {
+            constructor(x, y, color, isAI = false) {
+                this.x = x; this.y = y; this.radius = 20; this.color = color; this.isAI = isAI;
+                this.speed = isAI ? 4.2 : 4.0;
+                this.maxHealth = 100; this.health = this.maxHealth;
+                this.facingAngle = Math.random() * Math.PI * 2; this.shootCooldown = 0;
+                this.freezeTimer = 0; 
+                
+                this.weaponType = isAI ? weaponList[Math.floor(Math.random() * weaponList.length)] : activeWeapon;
+                
+                this.shieldTimer = 0; this.isShielded = false; this.immunityTimer = 0; 
+                this.aiTargetX = x; this.aiTargetY = y; this.aiTimer = 0; this.strafeAngle = Math.random() * Math.PI;
+            }
+
+            move(dx, dy) {
+                if (this.freezeTimer > 0) return;
+                let currentSpeed = Math.max(1.8, this.speed - (this.radius - 20) * 0.03);
+                this.x += dx * currentSpeed; this.y += dy * currentSpeed;
+                this.facingAngle = Math.atan2(dy, dx);
+                this.x = Math.max(this.radius, Math.min(MAP_WIDTH - this.radius, this.x));
+                this.y = Math.max(this.radius, Math.min(MAP_HEIGHT - this.radius, this.y));
+            }
+
+            shoot() {
+                if (this.freezeTimer > 0) return;
+                if (this.shootCooldown <= 0) {
+                    let currentWeapon = this.isAI ? this.weaponType : activeWeapon;
+                    let angle = this.facingAngle;
+                    let bX = this.x + Math.cos(angle) * (this.radius + 6);
+                    let bY = this.y + Math.sin(angle) * (this.radius + 6);
+                    let bRadius = Math.max(4, this.radius * 0.22); 
+                    let damage = Math.round((this.isAI ? 18 : 16) + (this.radius - 20) * 0.3);
+
+                    if (!this.isAI) playShootSound(); 
+
+                    if (currentWeapon === 'double') {
+                        let pX1 = bX + Math.cos(angle + Math.PI/2) * 6; let pY1 = bY + Math.sin(angle + Math.PI/2) * 6;
+                        let pX2 = bX + Math.cos(angle - Math.PI/2) * 6; let pY2 = bY + Math.sin(angle - Math.PI/2) * 6;
+                        bullets.push(new Bullet(pX1, pY1, angle, bRadius, this.color, this, damage));
+                        bullets.push(new Bullet(pX2, pY2, angle, bRadius, this.color, this, damage));
+                        this.shootCooldown = 20;
+                    } else if (currentWeapon === 'triple') {
+                        bullets.push(new Bullet(bX, bY, angle - 0.22, bRadius, this.color, this, damage));
+                        bullets.push(new Bullet(bX, bY, angle, bRadius, this.color, this, damage));
+                        bullets.push(new Bullet(bX, bY, angle + 0.22, bRadius, this.color, this, damage));
+                        this.shootCooldown = 24;
+                    } else if (currentWeapon === 'penta') {
+                        for(let i=-2; i<=2; i++) bullets.push(new Bullet(bX, bY, angle + i*0.18, bRadius, this.color, this, damage));
+                        this.shootCooldown = 34;
+                    } else if (currentWeapon === 'laser') {
+                        let laserBullet = new Bullet(bX, bY, angle, 3, '#00f0ff', this, damage - 2);
+                        laserBullet.speed = 24; laserBullet.life = 40; laserBullet.isLaser = true;
+                        bullets.push(laserBullet); this.shootCooldown = 8;
+                    } else if (currentWeapon === 'fire') {
+                        let spread = (Math.random() - 0.5) * 0.35;
+                        let fireBullet = new Bullet(bX, bY, angle + spread, Math.random() * 4 + 5, '#ff5500', this, damage - 3);
+                        fireBullet.speed = Math.random() * 4 + 7; fireBullet.life = Math.random() * 12 + 16;
+                        fireBullet.isFire = true; bullets.push(fireBullet); this.shootCooldown = 4;
+                    } else if (currentWeapon === 'ice') {
+                        let iceBullet = new Bullet(bX, bY, angle, 6, '#b3f0ff', this, damage - 1);
+                        iceBullet.speed = 13; iceBullet.life = 55; iceBullet.isIce = true; 
+                        bullets.push(iceBullet); this.shootCooldown = 25;
+                    } else if (currentWeapon === 'bomb') {
+                        let bombBullet = new Bullet(bX, bY, angle, 9, '#ff3300', this, damage + 10);
+                        bombBullet.speed = 6.5; bombBullet.life = 50; bombBullet.isBomb = true;
+                        bullets.push(bombBullet); this.shootCooldown = 55;
+                    } else {
+                        bullets.push(new Bullet(bX, bY, angle, bRadius, this.color, this, damage));
+                        this.shootCooldown = 15; 
+                    }
+                }
+            }
+
+            update() {
+                if (this.shootCooldown > 0) this.shootCooldown--;
+                if (this.immunityTimer > 0) this.immunityTimer--; 
+                if (this.isShielded) { this.shieldTimer--; if (this.shieldTimer <= 0) this.isShielded = false; }
+                if (this.freezeTimer > 0) { this.freezeTimer--; return; }
+
+                if (this.isAI) {
+                    let closestTarget = null; let closestDist = TRACK_RANGE; 
+                    if (player) {
+                        let d = Math.sqrt(Math.pow(player.x - this.x, 2) + Math.pow(player.y - this.y, 2));
+                        if (d < closestDist) { closestTarget = player; closestDist = d; }
+                    }
+
+                    if (this.health < 60 && medkits.length > 0) {
+                        let closestMed = medkits[0]; let minDist = 5000;
+                        medkits.forEach(m => {
+                            let d = Math.sqrt(Math.pow(m.x - this.x, 2) + Math.pow(m.y - this.y, 2));
+                            if(d < minDist) { minDist = d; closestMed = m; }
+                        });
+                        if (minDist < 450) {
+                            let am = Math.atan2(closestMed.y - this.y, closestMed.x - this.x);
+                            this.move(Math.cos(am), Math.sin(am));
+                            return;
+                        }
+                    }
+
+                    bots.forEach(other => {
+                        if (other === this) return;
+                        let d = Math.sqrt(Math.pow(other.x - this.x, 2) + Math.pow(other.y - this.y, 2));
+                        if (d < closestDist) { closestTarget = other; closestDist = d; }
+                    });
+
+                    if (closestTarget) {
+                        this.facingAngle = Math.atan2(closestTarget.y - this.y, closestTarget.x - this.x);
+                        if (closestDist < 100) {
+                            let bx = this.x - closestTarget.x; let by = this.y - closestTarget.y;
+                            let dst = Math.sqrt(bx*bx + by*by) || 1; this.move(bx/dst, by/dst);
+                        } else if (closestDist > 140) {
+                            let fx = closestTarget.x - this.x; let fy = closestTarget.y - this.y;
+                            let dst = Math.sqrt(fx*fx + fy*fy) || 1; this.move(fx/dst, fy/dst);
+                        } else {
+                            this.strafeAngle += 0.05; this.move(Math.cos(this.strafeAngle)*0.4, Math.sin(this.strafeAngle)*0.4);
+                        }
+                        if (Math.random() < 0.07) this.shoot(); 
+                    } else {
+                        this.aiTimer--;
+                        if (this.aiTimer <= 0) {
+                            this.aiTargetX = this.x + (Math.random() * 400 - 200); this.aiTargetY = this.y + (Math.random() * 400 - 200);
+                            this.aiTargetX = Math.max(50, Math.min(MAP_WIDTH - 50, this.aiTargetX));
+                            this.aiTargetY = Math.max(50, Math.min(MAP_HEIGHT - 50, this.aiTargetY));
+                            this.aiTimer = Math.random() * 120 + 60;
+                        }
+                        let mx = this.aiTargetX - this.x; let my = this.aiTargetY - this.y; let d = Math.sqrt(mx*mx + my*my);
+                        if (d > 15) this.move(mx / d, my / d);
+                    }
+                }
+            }
+
+            draw() {
+                let rx = this.x - camera.x; let ry = this.y - camera.y;
+                if(rx < -this.radius*2 || rx > canvas.width + this.radius*2 || ry < -this.radius*2 || ry > canvas.height + this.radius*2) return;
+                if (this.immunityTimer > 0 && Math.floor(Date.now() / 50) % 2 === 0) return;
+
+                ctx.save(); ctx.translate(rx, ry);
+                let barW = this.radius * 1.6; let barH = 5;
+                ctx.fillStyle = "rgba(255,255,255,0.15)"; ctx.fillRect(-barW/2, -this.radius - 12, barW, barH);
+                ctx.fillStyle = (this.health > 40) ? '#00ff66' : '#ff3366'; 
+                ctx.fillRect(-barW/2, -this.radius - 12, barW * (this.health / this.maxHealth), barH);
+
+                ctx.shadowBlur = 15; ctx.shadowColor = this.color;
+                ctx.strokeStyle = this.color; ctx.lineWidth = 3 + (this.radius * 0.04);
+                ctx.beginPath(); ctx.arc(0, 0, this.radius, 0, Math.PI * 2); ctx.stroke();
+                ctx.fillStyle = "rgba(255,255,255,0.06)"; ctx.fill();
+
+                ctx.rotate(this.facingAngle);
+                ctx.fillStyle = '#ffffff'; ctx.fillRect(3, -3, this.radius + 8, 6);
+                ctx.restore();
+
+                if (this.isShielded) {
+                    ctx.save(); ctx.strokeStyle = '#00ffff'; ctx.lineWidth = 4; ctx.shadowBlur = 15; ctx.shadowColor = '#00ffff';
+                    ctx.beginPath(); ctx.arc(rx, ry, this.radius + 10, 0, Math.PI * 2); ctx.stroke(); ctx.restore();
+                }
+
+                if (this.freezeTimer > 0) {
+                    ctx.save(); ctx.fillStyle = "rgba(0, 210, 255, 0.38)"; ctx.strokeStyle = "#b3f0ff"; ctx.lineWidth = 3;
+                    ctx.shadowBlur = 20; ctx.shadowColor = "#00f0ff"; ctx.beginPath();
+                    let iceSize = this.radius * 2.5; ctx.rect(rx - iceSize/2, ry - iceSize/2, iceSize, iceSize);
+                    ctx.fill(); ctx.stroke(); ctx.restore();
+                }
+            }
+        }
+
+        class Bullet {
+            constructor(x, y, angle, radius, color, owner, damage) {
+                this.x = x; this.y = y; this.speed = 11.5;
+                this.vx = Math.cos(angle) * this.speed; this.vy = Math.sin(angle) * this.speed;
+                this.radius = radius; this.color = color; this.owner = owner; this.damage = damage;
+                this.life = 75; this.isLaser = false; this.isBomb = false; this.isFire = false; this.isIce = false;
+            }
+            update() { this.x += this.vx; this.y += this.vy; this.life--; if (this.isBomb && this.life <= 0) explodeBomb(this); }
+            draw() {
+                let rx = this.x - camera.x; let ry = this.y - camera.y;
+                ctx.save(); 
+                if (this.isLaser) {
+                    ctx.shadowBlur = 12; ctx.shadowColor = this.color; ctx.strokeStyle = this.color; ctx.lineWidth = 4;
+                    ctx.beginPath(); ctx.moveTo(rx, ry); ctx.lineTo(rx - this.vx*0.8, ry - this.vy*0.8); ctx.stroke();
+                } else if (this.isFire) {
+                    ctx.shadowBlur = 15; ctx.shadowColor = '#ff6600'; ctx.fillStyle = Math.random() < 0.5 ? '#ff3300' : '#ffcc00';
+                    ctx.beginPath(); ctx.arc(rx, ry, Math.max(2, this.radius * (1.3 - this.life / 25)), 0, Math.PI * 2); ctx.fill();
+                } else if (this.isIce) {
+                    ctx.shadowBlur = 12; ctx.shadowColor = '#00f0ff'; ctx.fillStyle = '#b3f0ff';
+                    ctx.beginPath(); ctx.arc(rx, ry, this.radius, 0, Math.PI * 2); ctx.fill();
+                } else {
+                    ctx.shadowBlur = 12; ctx.shadowColor = this.color; ctx.fillStyle = this.isBomb ? '#ff3300' : '#fff';
+                    ctx.beginPath(); ctx.arc(rx, ry, this.radius, 0, Math.PI * 2); ctx.fill();
+                }
+                ctx.restore();
+            }
+        }
+
+        function explodeBomb(bombBullet) {
+            createExplosion(bombBullet.x, bombBullet.y, '#ff5500', 20);
+            let totalShrapnels = 8;
+            for (let i = 0; i < totalShrapnels; i++) {
+                let angle = (Math.PI * 2 / totalShrapnels) * i;
+                let shrapnel = new Bullet(bombBullet.x, bombBullet.y, angle, 4, '#ff9900', bombBullet.owner, Math.round(bombBullet.damage * 0.6));
+                shrapnel.life = 25; shrapnel.speed = 8; bullets.push(shrapnel);
+            }
+        }
+
+        function createExplosion(x, y, color, count = 10) {
+            for (let i = 0; i < count; i++) {
+                particles.push({
+                    x: x, y: y, radius: Math.random() * 3 + 1,
+                    vx: Math.cos(Math.random() * Math.PI * 2) * (Math.random() * 5 + 2),
+                    vy: Math.sin(Math.random() * Math.PI * 2) * (Math.random() * 5 + 2),
+                    color: color, alpha: 1, decay: Math.random() * 0.04 + 0.02
+                });
+            }
+        }
+
+        function randomizePosition(target) {
+            target.x = Math.random() * (MAP_WIDTH - 200) + 100; target.y = Math.random() * (MAP_HEIGHT - 200) + 100;
+        }
+
+        function respawnFighter(target, killer) {
+            let explosionColor = target.freezeTimer > 0 ? '#b3f0ff' : target.color;
+            createExplosion(target.x, target.y, explosionColor, 30);
+            
+            if (killer === player && target !== player) {
+                totalCoins += 20; localStorage.setItem('neon_arena_coins', totalCoins); 
+                floatingTexts.push({ x: target.x, y: target.y - 10, text: "+20 💰", color: "#ffff00", life: 45 });
+            }
+            randomizePosition(target);
+            target.radius = 20; target.health = target.maxHealth;
+            target.isShielded = false; target.shieldTimer = 0; target.immunityTimer = 60; target.freezeTimer = 0;
+            
+            if (target.isAI) {
+                target.weaponType = weaponList[Math.floor(Math.random() * weaponList.length)];
+            }
+        }
+
+        function spawnFood(count = 1) {
+            for(let i=0; i<count; i++) {
+                foods.push({ x: Math.random() * MAP_WIDTH, y: Math.random() * MAP_HEIGHT, size: Math.random() * 4 + 5, color: getRandomNeonColor() });
+            }
+        }
+
+        function spawnShieldItem(count = 1) {
+            for(let i=0; i<count; i++) shields.push({ x: Math.random() * MAP_WIDTH, y: Math.random() * MAP_HEIGHT, size: 14 });
+        }
+
+        function spawnMedkit(count = 1) {
+            for(let i=0; i<count; i++) medkits.push({ x: Math.random() * MAP_WIDTH, y: Math.random() * MAP_HEIGHT, size: 18 });
+        }
+
+        function handleFighterCollisions() {
+            let allFighters = []; if (player) allFighters.push(player); bots.forEach(b => allFighters.push(b));
+            for (let i = 0; i < allFighters.length; i++) {
+                for (let j = i + 1; j < allFighters.length; j++) {
+                    let f1 = allFighters[i]; let f2 = allFighters[j];
+                    let dx = f2.x - f1.x; let dy = f2.y - f1.y; let distance = Math.sqrt(dx * dx + dy * dy);
+                    let minDist = f1.radius + f2.radius;
+                    if (distance < minDist) {
+                        let overlap = minDist - distance;
+                        let pushX = (dx / (distance || 1)) * (overlap / 2); let pushY = (dy / (distance || 1)) * (overlap / 2);
+                        f1.x -= pushX; f1.y -= pushY; f2.x += pushX; f2.y += pushY;
+                    }
+                }
+            }
+        }
+
+        function startGame() {
+            initAudio(); 
+            let chosenColor = document.getElementById('playerColorInput').value;
+            document.getElementById('home-screen').style.display = 'none';
+            document.getElementById('game-container').style.display = 'block';
+            
+            bullets = []; particles = []; foods = []; shields = []; medkits = []; floatingTexts = [];
+            isGameRunning = true;
+            isBagOpen = false;
+            document.getElementById('inventory-container').style.display = 'none';
+            
+            player = new Fighter(0, 0, chosenColor, false); randomizePosition(player);
+            
+            // અહીં મોટો ફેરફાર કર્યો: ૧૬ ની જગ્યાએ હવે ૩૦ બોટ્સ સ્પાન થશે!
+            bots = []; 
+            for (let i = 0; i < 30; i++) { 
+                let bot = new Fighter(0, 0, getRandomNeonColor(), true); 
+                randomizePosition(bot); 
+                bots.push(bot); 
+            }
+
+            spawnFood(130); spawnShieldItem(10); spawnMedkit(8);
+            updateInventoryUI();
+        }
+
+        function exitToHome() {
+            isGameRunning = false;
+            isBagOpen = false;
+            document.getElementById('inventory-container').style.display = 'none';
+            document.getElementById('game-container').style.display = 'none';
+            document.getElementById('home-screen').style.display = 'flex';
+            updateLobbyUI();
+        }
+
+        function toggleBag() {
+            isBagOpen = !isBagOpen;
+            document.getElementById('inventory-container').style.display = isBagOpen ? 'flex' : 'none';
+        }
+
+        function updateInventoryUI() {
+            Object.keys(unlockedWeapons).forEach(w => {
+                let slot = document.getElementById('slot-gun-' + w);
+                if (slot) {
+                    if (unlockedWeapons[w]) slot.style.opacity = "1"; else slot.style.opacity = "0.22";
+                    if (activeWeapon === w) slot.classList.add('active-weapon'); else slot.classList.remove('active-weapon');
+                }
+            });
+        }
+
+        function selectWeapon(w) {
+            if (unlockedWeapons[w]) { activeWeapon = w; localStorage.setItem('neon_arena_active', w); updateInventoryUI(); }
+            else { alert("This gun is locked! Buy it from the Shop on the Home Screen."); }
+        }
+
+        function toggleShop(open) {
+            isShopOpen = open; document.getElementById('shop-modal').style.display = open ? 'block' : 'none';
+            if(open) renderShop();
+        }
+
+        function buyWeapon(type, cost) {
+            if (unlockedWeapons[type]) { alert("You already own this weapon!"); return; }
+            if (totalCoins >= cost) {
+                totalCoins -= cost; unlockedWeapons[type] = true; activeWeapon = type;
+                localStorage.setItem('neon_arena_coins', totalCoins);
+                localStorage.setItem('neon_arena_weapons', JSON.stringify(unlockedWeapons));
+                localStorage.setItem('neon_arena_active', type);
+                updateLobbyUI(); updateInventoryUI();
+                alert("Bingo! New gun unlocked! 🎉");
+            } else { alert("Not enough coins to buy this gun!"); }
+        }
+
+        function gameLoop() {
+            if (isGameRunning) {
+                ctx.fillStyle = '#05030d';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                if (player) {
+                    camera.x = Math.max(0, Math.min(MAP_WIDTH - canvas.width, player.x - canvas.width / 2));
+                    camera.y = Math.max(0, Math.min(MAP_HEIGHT - canvas.height, player.y - canvas.height / 2));
+                }
+
+                ctx.strokeStyle = 'rgba(0, 240, 255, 0.035)'; let gridSize = 90;
+                for (let x = Math.floor(camera.x/gridSize)*gridSize; x < camera.x+canvas.width+gridSize; x+=gridSize) { ctx.beginPath(); ctx.moveTo(x-camera.x, 0); ctx.lineTo(x-camera.x, canvas.height); ctx.stroke(); }
+                for (let y = Math.floor(camera.y/gridSize)*gridSize; y < camera.y+canvas.height+gridSize; y+=gridSize) { ctx.beginPath(); ctx.moveTo(0, y-camera.y); ctx.lineTo(canvas.width, y-camera.y); ctx.stroke(); }
+
+                if(foods.length < 130) spawnFood(1);
+                for (let i = foods.length - 1; i >= 0; i--) {
+                    let f = foods[i]; let rx = f.x - camera.x; let ry = f.y - camera.y;
+                    ctx.fillStyle = f.color; ctx.fillRect(rx - f.size/2, ry - f.size/2, f.size, f.size);
+                    if (player && Math.sqrt(Math.pow(player.x - f.x, 2) + Math.pow(player.y - f.y, 2)) < player.radius) { player.radius = Math.min(70, player.radius + 0.3); foods.splice(i, 1); continue; }
+                    for (let j = 0; j < bots.length; j++) { if (Math.sqrt(Math.pow(bots[j].x - f.x, 2) + Math.pow(bots[j].y - f.y, 2)) < bots[j].radius) { bots[j].radius = Math.min(70, bots[j].radius + 0.3); foods.splice(i, 1); break; } }
+                }
+
+                if(shields.length < 8) spawnShieldItem(1);
+                for(let i = shields.length - 1; i >= 0; i--) {
+                    let s = shields[i]; let rx = s.x - camera.x; let ry = s.y - camera.y;
+                    ctx.save(); ctx.shadowBlur = 12; ctx.shadowColor = '#00ffff'; ctx.fillStyle = '#00ffff';
+                    ctx.beginPath(); ctx.arc(rx, ry, 7, 0, Math.PI*2); ctx.fill(); ctx.restore();
+                    if (player && Math.sqrt(Math.pow(player.x - s.x, 2) + Math.pow(player.y - s.y, 2)) < player.radius + 7) { player.isShielded = true; player.shieldTimer = 300; shields.splice(i, 1); continue; }
+                    for (let j = 0; j < bots.length; j++) { if (Math.sqrt(Math.pow(bots[j].x - s.x, 2) + Math.pow(bots[j].y - s.y, 2)) < bots[j].radius + 7) { bots[j].isShielded = true; bots[j].shieldTimer = 300; shields.splice(i, 1); break; } }
+                }
+
+                if(medkits.length < 6) spawnMedkit(1);
+                for(let i = medkits.length - 1; i >= 0; i--) {
+                    let m = medkits[i]; let rx = m.x - camera.x; let ry = m.y - camera.y;
+                    ctx.save(); ctx.shadowBlur = 15; ctx.shadowColor = '#00ff66'; ctx.fillStyle = '#00ff66';
+                    ctx.fillRect(rx - m.size/2, ry - m.size/2, m.size, m.size);
+                    ctx.fillStyle = '#ffffff'; 
+                    ctx.fillRect(rx - 2, ry - m.size/2 + 3, 4, m.size - 6); ctx.fillRect(rx - m.size/2 + 3, ry - 2, m.size - 6, 4);
+                    ctx.restore();
+
+                    if (player && Math.sqrt(Math.pow(player.x - m.x, 2) + Math.pow(player.y - m.y, 2)) < player.radius + m.size/2) {
+                        player.health = Math.min(player.maxHealth, player.health + 30);
+                        floatingTexts.push({ x: player.x, y: player.y - 25, text: "+30 HP ❤️", color: "#00ff66", life: 45 });
+                        medkits.splice(i, 1); continue;
+                    }
+                    for (let j = 0; j < bots.length; j++) {
+                        let b = bots[j];
+                        if (Math.sqrt(Math.pow(b.x - m.x, 2) + Math.pow(b.y - m.y, 2)) < b.radius + m.size/2) { b.health = Math.min(b.maxHealth, b.health + 30); medkits.splice(i, 1); break; }
+                    }
+                }
+
+                if (player) { player.update(); if (fireFlag && player.freezeTimer <= 0) player.shoot(); }
+                bots.forEach(bot => bot.update()); handleFighterCollisions();
+
+                if (player && joystick.active && player.freezeTimer <= 0) {
+                    let dx = joystick.curX - joystick.startX; let dy = joystick.curY - joystick.startY; let d = Math.sqrt(dx*dx + dy*dy);
+                    if (d > 5) player.move(dx/d, dy/d);
+                }
+
+                for (let i = bullets.length - 1; i >= 0; i--) {
+                    let b = bullets[i]; b.update(); b.draw();
+                    if (b.x < 0 || b.x > MAP_WIDTH || b.y < 0 || b.y > MAP_HEIGHT || b.life <= 0) { bullets.splice(i, 1); continue; }
+
+                    if (player && b.owner !== player) {
+                        if (Math.sqrt(Math.pow(b.x - player.x, 2) + Math.pow(b.y - player.y, 2)) < player.radius + b.radius) {
+                            if (b.isBomb) explodeBomb(b); bullets.splice(i, 1);
+                            if (!player.isShielded && player.immunityTimer <= 0) {
+                                if (b.isIce) player.freezeTimer = 90; 
+                                player.health -= b.damage; player.immunityTimer = 5; createExplosion(b.x, b.y, player.color, 5);
+                                if (player.health <= 0) respawnFighter(player, b.owner);
+                            }
+                            continue;
+                        }
+                    }
+
+                    let hitBot = false;
+                    for (let j = 0; j < bots.length; j++) {
+                        let bot = bots[j]; if (b.owner === bot) continue;
+                        if (Math.sqrt(Math.pow(b.x - bot.x, 2) + Math.pow(b.y - bot.y, 2)) < bot.radius + b.radius) {
+                            if (b.isBomb) explodeBomb(b); bullets.splice(i, 1); hitBot = true;
+                            if (!bot.isShielded && bot.immunityTimer <= 0) {
+                                if (b.isIce) bot.freezeTimer = 90;
+                                bot.health -= b.damage; bot.immunityTimer = 12; createExplosion(b.x, b.y, bot.color, 5);
+                                if (bot.health <= 0) { if(b.owner === player) player.radius = Math.min(70, player.radius + 4.5); respawnFighter(bot, b.owner); }
+                            }
+                            break;
+                        }
+                    } if (hitBot) continue;
+                }
+
+                for (let i = particles.length - 1; i >= 0; i--) {
+                    let p = particles[i]; p.x += p.vx; p.y += p.vy; p.alpha -= p.decay;
+                    if (p.alpha <= 0) particles.splice(i, 1); 
+                    else { ctx.save(); ctx.globalAlpha = p.alpha; ctx.fillStyle = p.color; ctx.beginPath(); ctx.arc(p.x - camera.x, p.y - camera.y, p.radius, 0, Math.PI * 2); ctx.fill(); ctx.restore(); }
+                }
+
+                for (let i = floatingTexts.length - 1; i >= 0; i--) {
+                    let ft = floatingTexts[i]; ft.y -= 0.8; ft.life--;
+                    if (ft.life <= 0) floatingTexts.splice(i, 1);
+                    else { ctx.save(); ctx.fillStyle = ft.color; ctx.font = "bold 15px 'Segoe UI'"; ctx.fillText(ft.text, ft.x - camera.x - 15, ft.y - camera.y); ctx.restore(); }
+                }
+                
+                if (joystick.active) {
+                    ctx.strokeStyle = 'rgba(0,240,255,0.2)'; ctx.beginPath(); ctx.arc(joystick.startX, joystick.startY, 40, 0, Math.PI * 2); ctx.stroke();
+                    ctx.fillStyle = 'rgba(0,240,255,0.4)'; ctx.beginPath(); ctx.arc(joystick.curX, joystick.curY, 15, 0, Math.PI * 2); ctx.fill();
+                }
+
+                bots.forEach(bot => bot.draw()); if(player) player.draw();
+            }
+            requestAnimationFrame(gameLoop);
+        }
+
+        // Touch Control: Split Screen (Left = Move, Right = Fire)
+        window.addEventListener('touchstart', (e) => {
+            initAudio(); 
+            for (let i = 0; i < e.changedTouches.length; i++) {
+                let t = e.changedTouches[i];
+                if (t.target.closest('#top-ui') || t.target.closest('#inventory-container') || isShopOpen) continue;
+                
+                if (t.clientX < canvas.width / 2) {
+                    // Left Side: Joystick Movement
+                    if (!joystick.active) {
+                        joystick.active = true; joystick.id = t.identifier; 
+                        joystick.startX = t.clientX; joystick.startY = t.clientY; 
+                        joystick.curX = t.clientX; joystick.curY = t.clientY;
+                    }
+                } else {
+                    // Right Side: Anywhere Touch to Shoot
+                    fireFlag = true;
+                    rightSideTouchId = t.identifier;
+                }
+            }
+        }, { passive: true });
+
+        window.addEventListener('touchmove', (e) => {
+            for (let i = 0; i < e.touches.length; i++) {
+                let t = e.touches[i];
+                if (joystick.active && t.identifier === joystick.id) {
+                    let dx = t.clientX - joystick.startX; let dy = t.clientY - joystick.startY; let d = Math.sqrt(dx*dx + dy*dy);
+                    if(d > 40) { joystick.curX = joystick.startX + (dx/d)*40; joystick.curY = joystick.startY + (dy/d)*40; }
+                    else { joystick.curX = t.clientX; joystick.curY = t.clientY; }
+                }
+            }
+        }, { passive: false });
+
+        window.addEventListener('touchend', (e) => { 
+            for (let i = 0; i < e.changedTouches.length; i++) { 
+                let t = e.changedTouches[i];
+                if (joystick.active && t.identifier === joystick.id) joystick.active = false; 
+                if (t.identifier === rightSideTouchId) { fireFlag = false; rightSideTouchId = null; }
+            } 
+        });
+
+        // Desktop / Computer Support (Right click/click anywhere on right screen to fire)
+        window.addEventListener('mousedown', (e) => {
+            initAudio();
+            if (e.target.closest('#top-ui') || e.target.closest('#inventory-container') || isShopOpen || e.target.closest('#home-screen')) return;
+            if (isGameRunning && e.clientX >= canvas.width / 2) {
+                fireFlag = true;
+            }
+        });
+        window.addEventListener('mouseup', () => { fireFlag = false; });
+
+        // Keyboard Fallback Configuration
+        window.addEventListener('keydown', (e) => {
+            initAudio();
+            if (['w','W','ArrowUp'].includes(e.key)) joystick = { active: true, startX: 0, startY: 0, curX: 0, curY: -30 };
+            if (['s','S','ArrowDown'].includes(e.key)) joystick = { active: true, startX: 0, startY: 0, curX: 0, curY: 30 };
+            if (['a','A','ArrowLeft'].includes(e.key)) joystick = { active: true, startX: 0, startY: 0, curX: -30, curY: 0 };
+            if (['d','D','ArrowRight'].includes(e.key)) joystick = { active: true, startX: 0, startY: 0, curX: 30, curY: 0 };
+            if (e.key === ' ') fireFlag = true;
+            if (['1','2','3','4','5','6','7','8'].includes(e.key)) {
+                let weapons = ['normal','double','triple','penta','laser','fire','ice','bomb'];
+                selectWeapon(weapons[parseInt(e.key)-1]);
+            }
+        });
+        window.addEventListener('keyup', (e) => { if (['w','W','s','S','a','A','d','D','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key)) joystick.active = false; if (e.key === ' ') fireFlag = false; });
+
+        gameLoop();
+    </script>
+</body>
+</html>
