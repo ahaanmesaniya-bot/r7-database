@@ -6,14 +6,6 @@
   "privacy_policy": "Welcome to R7 Game Zone. We respect your privacy and do not collect any personal data.",
   "items": [
     {
-      "id": "item_1781339036838",
-      "title": "કેરમ",
-      "logo": "https://files.catbox.moe/74fuaz.png",
-      "type": "Game",
-      "url": "https://ahaanmesaniya-bot.github.io/r7-database/games/----.html",
-      "openDirect": false
-    },
-    {
       "id": "item_1781430700207",
       "title": "Build Tower",
       "logo": "https://files.catbox.moe/l1ca18.png",
