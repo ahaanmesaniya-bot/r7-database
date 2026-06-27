@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Going Up - Rooftop</title>
+    <!-- Font Awesome Link for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #ffffff;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        /* Fixed modern premium card design */
+        .game-card {
+            background-color: #ffffff;
+            border-radius: 24px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+            width: 90%;
+            max-width: 340px;
+            overflow: hidden;
+            border: 1px solid #f0f0f0;
+            transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.3s ease;
+        }
+
+        .game-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Balanced image container */
+        .game-image-box {
+            width: 100%;
+            height: 200px;
+            overflow: hidden;
+            background-color: #f8f9fa;
+        }
+
+        .game-image-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* Cleaned text and button spacing */
+        .game-details {
+            padding: 20px;
+            text-align: center;
+        }
+
+        .game-title {
+            font-size: 1.35rem;
+            color: #111111;
+            margin: 0 0 20px 0;
+            font-weight: 700;
+            letter-spacing: -0.3px;
+        }
+
+        /* Clean blue play button layout */
+        .play-now-button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #0076ff, #0055d4);
+            color: #ffffff;
+            text-decoration: none;
+            padding: 12px 32px;
+            border-radius: 30px;
+            font-size: 1rem;
+            font-weight: 600;
+            letter-spacing: 0.2px;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 12px rgba(0, 118, 255, 0.25);
+            width: 80%;
+        }
+
+        .play-now-button:hover {
+            box-shadow: 0 6px 20px rgba(0, 118, 255, 0.4);
+            transform: translateY(-1px);
+        }
+
+        .play-now-button i {
+            margin-right: 8px;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="game-card">
+        <div class="game-image-box">
+            <img src="https://files.catbox.moe/b5vk77.jfif" alt="Going Up - Rooftop">
+        </div>
+        <div class="game-details">
+            <h2 class="game-title">Going Up - Rooftop</h2>
+            <a href="https://poki.com/en/g/going-up-rooftop" target="_blank" class="play-now-button">
+                <i class="fa-solid fa-play"></i> Play Now
+            </a>
+        </div>
+    </div>
+
+</body>
+</html>
