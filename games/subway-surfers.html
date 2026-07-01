@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="gu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Subway Surfers Online</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #000000;
+        }
+
+        /* ગેમ ફ્રેમ - ઊભા મોબાઈલમાં ફુલ સ્ક્રીન ચાલશે */
+        .game-frame {
+            width: 100%;
+            height: 100%;
+            border: none;
+            display: block;
+        }
+
+        /* આડા મોબાઈલ માટે રોટેટ સ્ક્રીન - હવે સિસ્ટમ બદલી નાખી છે */
+        .rotate-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #464646;
+            z-index: 99999;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .rotate-overlay svg {
+            width: 180px;
+            height: 180px;
+        }
+
+        /* જ્યારે ફોન આડો (Landscape) હોય ત્યારે જ આ સ્ક્રીન દેખાશે અને ફોન ઊભો કરવાનું કહેશે */
+        @media screen and (orientation: landscape) {
+            .rotate-overlay {
+                display: flex;
+            }
+            .game-frame {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- આડા મોબાઈલમાં દેખાતો સિમ્બોલ (જે ફોનને ઊભો કરવાનો ઈશારો કરે છે) -->
+    <div class="rotate-overlay">
+        <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+            <!-- આડો ફોન -->
+            <rect x="28" y="39" width="44" height="22" rx="4" fill="none" stroke="#ffffff" stroke-width="2"/>
+            <!-- ઊભો ફોન -->
+            <rect x="39" y="15" width="22" height="44" rx="4" fill="none" stroke="#ffffff" stroke-width="2"/>
+            <!-- ઉપર તરફ જતો એરો (તીર) -->
+            <path d="M 50 45 L 50 25 M 50 25 L 46 29 M 50 25 L 54 29" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+    </div>
+
+    <!-- ઊભા મોબાઈલ માટે સેટ કરેલી ગેમ લિંક -->
+    <iframe 
+        class="game-frame" 
+        src="https://www.gamessumo.com/action-games/subway-servers-online" 
+        allow="autoplay; fullscreen; keyboard"
+        scrolling="no">
+    </iframe>
+
+</body>
+</html>
