@@ -52,6 +52,14 @@
       "type": "Game",
       "url": "https://ahaanmesaniya-bot.github.io/r7-database/games/subway-surfers.html",
       "openDirect": false
+    },
+    {
+      "id": "item_1782909449097",
+      "title": "snake",
+      "logo": "https://files.catbox.moe/y3uaek.jpeg",
+      "type": "Game",
+      "url": "https://ahaanmesaniya-bot.github.io/r7-database/games/snake.html",
+      "openDirect": false
     }
   ],
   "aboutUs": "ફધબધધબધભ",
