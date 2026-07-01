@@ -44,6 +44,14 @@
       "type": "Game",
       "url": "https://ahaanmesaniya-bot.github.io/r7-database/games/strykon.html",
       "openDirect": false
+    },
+    {
+      "id": "item_1782913417952",
+      "title": "snake1",
+      "logo": "statusBadge.style.background",
+      "type": "Game",
+      "url": "https://ahaanmesaniya-bot.github.io/r7-database/games/snake1.html",
+      "openDirect": false
     }
   ],
   "aboutUs": "ફધબધધબધભ",
