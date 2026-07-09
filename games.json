@@ -140,6 +140,14 @@
       "type": "Game",
       "url": "https://ahaanmesaniya-bot.github.io/r7-database/games/ludo-legend.html",
       "openDirect": false
+    },
+    {
+      "id": "item_1783585765844",
+      "title": "Carrom Rush",
+      "logo": "https://files.catbox.moe/g7e5qr.jpeg",
+      "type": "Game",
+      "url": "https://ahaanmesaniya-bot.github.io/r7-database/games/carrom-rush.html",
+      "openDirect": false
     }
   ],
   "aboutUs": "ફધબધધબધભ",
