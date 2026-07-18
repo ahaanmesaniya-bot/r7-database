@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="gu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mad Out Los Angeles - Full Screen Game</title>
+    <style>
+        /* આખી સ્ક્રીનનો વધારાનો સ્પેસ (Margin/Padding) હટાવવા માટે */
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden; /* સ્ક્રોલબાર ન દેખાય તે માટે */
+            background-color: #000; /* પાછળનો બેકગ્રાઉન્ડ કલર કાળો રાખવા માટે */
+        }
+
+        /* આઇફ્રેમ આખી સ્ક્રીન રોકી લે તે માટે */
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ગેમ રમવા માટેની ફૂલ સ્ક્રીન આઇફ્રેમ -->
+    <iframe src="https://kiz10.com/mad-out-los-angeles/" 
+            title="Mad Out Los Angeles"
+            allow="autoplay; fullscreen; keyboard">
+    </iframe>
+
+</body>
+</html>
