@@ -164,6 +164,14 @@
       "type": "Game",
       "url": "https://ahaanmesaniya-bot.github.io/r7-database/games/superhero-fighting.html",
       "openDirect": false
+    },
+    {
+      "id": "item_1784350865926",
+      "title": "Go escape",
+      "logo": "https://files.catbox.moe/cy6dyg.jpg",
+      "type": "Game",
+      "url": "https://ahaanmesaniya-bot.github.io/r7-database/games/go-escape.html",
+      "openDirect": false
     }
   ],
   "aboutUs": "ફધબધધબધભ",
