@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="gu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Go Escape - Play Game</title>
+    <style>
+        /* પેજના ડિફોલ્ટ માર્જિન હટાવવા અને આખી સ્ક્રીનનો ઉપયોગ કરવા માટે */
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #000; /* ગેમ લોડ થાય ત્યાં સુધી બ્લેક બેકગ્રાઉન્ડ */
+        }
+
+        /* ગેમ કન્ટેનરને આખી સ્ક્રીન પર ફિટ કરવા માટે */
+        .game-container {
+            width: 100%;
+            height: 100%;
+        }
+
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ગેમ ચાલુ કરવાનું મેઈન કન્ટેનર -->
+    <div class="game-container">
+        <!-- અહીં તમારી Go Escape ગેમની ડાયરેક્ટ પ્લે લિંક સેટ કરી છે -->
+        <iframe src="https://play.famobi.com/go-escape" allowfullscreen></iframe>
+    </div>
+
+    <!-- ગેમના જરૂરી બેકએન્ડ સ્ક્રિપ્ટ્સ -->
+    <script src="/assets/0.2-c2653b23/js/utils.js"></script>
+    <script src="/assets/0.2-c2653b23/js/app.js"></script>
+    <script src="/assets/0.2-c2653b23/js/bannerads.js"></script>
+
+    <script>
+        window.highlightNavFromLocalStorage = true;
+    </script>
+</body>
+</html>
