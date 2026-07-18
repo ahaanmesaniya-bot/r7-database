@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="gu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>કેરમ હીરો - ફાઇનલ ફિટ</title>
+    <style>
+        /* બધી જ વધારાની જગ્યા અને માર્જિન ઝીરો કરવા */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        html, body {
+            width: 100%;
+            /* જૂના બ્રાઉઝર માટે ફોલબેક */
+            height: 100vh; 
+            /* નવા મોબાઈલ બ્રાઉઝરમાં એડ્રેસ બારને એડજસ્ટ કરવા માટે પરફેક્ટ ફિટ (Dynamic Viewport Height) */
+            height: 100dvh; 
+            
+            background-color: #0b1526;
+            overflow: hidden;
+            
+            /* પેજ હલે નહીં અને સ્ક્રોલ ન થાય તે માટે */
+            position: fixed; 
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            
+            /* મોબાઈલમાં ભૂલથી સ્વાઇપ કે રિફ્રેશ (Pull-to-refresh) થતું અટકાવવા */
+            touch-action: none; 
+        }
+
+        iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+
+    <iframe 
+        src="https://y8.com/embed/carrom_hero" 
+        scrolling="no" 
+        allowfullscreen="true">
+    </iframe>
+
+</body>
+</html>
