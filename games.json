@@ -172,6 +172,14 @@
       "type": "Game",
       "url": "https://ahaanmesaniya-bot.github.io/r7-database/games/gta.html",
       "openDirect": false
+    },
+    {
+      "id": "item_1784362093837",
+      "title": "carrom",
+      "logo": "https://files.catbox.moe/oq7ry9.jpeg",
+      "type": "Game",
+      "url": "https://ahaanmesaniya-bot.github.io/r7-database/games/carrom.html",
+      "openDirect": false
     }
   ],
   "aboutUs": "ફધબધધબધભ",
