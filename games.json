@@ -29,7 +29,8 @@
       "logo": "https://files.catbox.moe/m0pzud.jpeg",
       "type": "Game",
       "url": "https://ahaanmesaniya-bot.github.io/r7-database/games/fruit-ninja.html",
-      "openDirect": false
+      "openDirect": false,
+      "active": false
     },
     {
       "id": "item_1782646725277",
@@ -37,7 +38,8 @@
       "logo": "https://files.catbox.moe/cb8l2d.jpeg",
       "type": "Game",
       "url": "https://ahaanmesaniya-bot.github.io/r7-database/games/07.html",
-      "openDirect": false
+      "openDirect": false,
+      "active": false
     },
     {
       "id": "item_1782909591320",
@@ -45,7 +47,8 @@
       "logo": "https://files.catbox.moe/si5iyq.jpeg",
       "type": "Game",
       "url": "https://ahaanmesaniya-bot.github.io/r7-database/games/strykon.html",
-      "openDirect": false
+      "openDirect": false,
+      "active": false
     },
     {
       "id": "item_1782913417952",
@@ -53,7 +56,8 @@
       "logo": "https://files.catbox.moe/y3uaek.jpeg",
       "type": "Game",
       "url": "https://ahaanmesaniya-bot.github.io/r7-database/games/snake1.html",
-      "openDirect": false
+      "openDirect": false,
+      "active": false
     },
     {
       "id": "item_1782913805947",
@@ -61,7 +65,8 @@
       "logo": "https://files.catbox.moe/cty7cx.jpeg",
       "type": "Game",
       "url": "https://ahaanmesaniya-bot.github.io/r7-database/games/supermarket-simulator.html",
-      "openDirect": false
+      "openDirect": false,
+      "active": false
     },
     {
       "id": "item_1782913880128",
@@ -69,7 +74,8 @@
       "logo": "https://files.catbox.moe/70r7ti.jpeg",
       "type": "Game",
       "url": "https://ahaanmesaniya-bot.github.io/r7-database/games/nut-sort--color.html",
-      "openDirect": false
+      "openDirect": false,
+      "active": false
     },
     {
       "id": "item_1782914088658",
@@ -77,7 +83,8 @@
       "logo": "https://files.catbox.moe/7t1y98.jpeg",
       "type": "Game",
       "url": "https://ahaanmesaniya-bot.github.io/r7-database/games/protect-my-dog1.html",
-      "openDirect": false
+      "openDirect": false,
+      "active": false
     },
     {
       "id": "item_1782914137908",
@@ -85,7 +92,8 @@
       "logo": "https://files.catbox.moe/zrykud.jpeg",
       "type": "Game",
       "url": "https://ahaanmesaniya-bot.github.io/r7-database/games/undisputed-mma.html",
-      "openDirect": false
+      "openDirect": false,
+      "active": false
     },
     {
       "id": "item_1782914195694",
@@ -93,7 +101,8 @@
       "logo": "https://files.catbox.moe/v13o8y.jpeg",
       "type": "Game",
       "url": "https://ahaanmesaniya-bot.github.io/r7-database/games/master-chess.html",
-      "openDirect": false
+      "openDirect": false,
+      "active": false
     },
     {
       "id": "item_1782914239643",
@@ -101,7 +110,8 @@
       "logo": "https://files.catbox.moe/ywshrt.jpeg",
       "type": "Game",
       "url": "https://ahaanmesaniya-bot.github.io/r7-database/games/knife-smash.html",
-      "openDirect": false
+      "openDirect": false,
+      "active": false
     },
     {
       "id": "item_1782914938992",
@@ -109,7 +119,8 @@
       "logo": "https://files.catbox.moe/lp18f6.jpeg",
       "type": "Game",
       "url": "https://ahaanmesaniya-bot.github.io/r7-database/games/bubble-pop--fairyland.html",
-      "openDirect": false
+      "openDirect": false,
+      "active": false
     },
     {
       "id": "item_1782915000017",
@@ -117,7 +128,8 @@
       "logo": "https://files.catbox.moe/6l170p.jpeg",
       "type": "Game",
       "url": "https://ahaanmesaniya-bot.github.io/r7-database/games/spaceflight-simulator.html",
-      "openDirect": false
+      "openDirect": false,
+      "active": false
     },
     {
       "id": "item_1782915073464",
@@ -125,7 +137,8 @@
       "logo": "https://files.catbox.moe/ahuv90.jpeg",
       "type": "Game",
       "url": "https://ahaanmesaniya-bot.github.io/r7-database/games/cubica.html",
-      "openDirect": false
+      "openDirect": false,
+      "active": false
     },
     {
       "id": "item_1782915184002",
@@ -133,7 +146,8 @@
       "logo": "https://files.catbox.moe/py3qis.jpeg",
       "type": "Game",
       "url": "https://ahaanmesaniya-bot.github.io/r7-database/games/block-buster.html",
-      "openDirect": false
+      "openDirect": false,
+      "active": false
     },
     {
       "id": "item_1783427215947",
@@ -141,7 +155,8 @@
       "logo": "https://files.catbox.moe/0x31kb.jpeg",
       "type": "Game",
       "url": "https://ahaanmesaniya-bot.github.io/r7-database/games/ludo-legend.html",
-      "openDirect": false
+      "openDirect": false,
+      "active": false
     },
     {
       "id": "item_1783585765844",
@@ -149,7 +164,8 @@
       "logo": "https://files.catbox.moe/g7e5qr.jpeg",
       "type": "Game",
       "url": "https://ahaanmesaniya-bot.github.io/r7-database/games/carrom-rush.html",
-      "openDirect": false
+      "openDirect": false,
+      "active": false
     },
     {
       "id": "item_1783588815877",
@@ -157,7 +173,8 @@
       "logo": "https://files.catbox.moe/jk3881.jpeg",
       "type": "Game",
       "url": "https://ahaanmesaniya-bot.github.io/r7-database/games/city-building.html",
-      "openDirect": false
+      "openDirect": false,
+      "active": false
     },
     {
       "id": "item_1783594056618",
@@ -165,7 +182,8 @@
       "logo": "https://files.catbox.moe/49yxpu.png",
       "type": "Game",
       "url": "https://ahaanmesaniya-bot.github.io/r7-database/games/superhero-fighting.html",
-      "openDirect": false
+      "openDirect": false,
+      "active": false
     },
     {
       "id": "item_1784353242068",
@@ -173,7 +191,8 @@
       "logo": "https://files.catbox.moe/xmy5cp.jpeg",
       "type": "Game",
       "url": "https://ahaanmesaniya-bot.github.io/r7-database/games/gta.html",
-      "openDirect": false
+      "openDirect": false,
+      "active": false
     },
     {
       "id": "item_1784362093837",
@@ -181,7 +200,8 @@
       "logo": "https://files.catbox.moe/oq7ry9.jpeg",
       "type": "Game",
       "url": "https://ahaanmesaniya-bot.github.io/r7-database/games/carrom.html",
-      "openDirect": false
+      "openDirect": false,
+      "active": false
     },
     {
       "id": "poki-custom-1",
@@ -190,7 +210,7 @@
       "url": "https://poki.com/en/g/my-perfect-hotel",
       "type": "Game",
       "openInNewTab": true,
-      "active": true
+      "active": false
     },
     {
       "id": "poki-custom-2",
@@ -199,7 +219,7 @@
       "url": "https://poki.com/en/g/burger-bounty",
       "type": "Game",
       "openInNewTab": true,
-      "active": true
+      "active": false
     },
     {
       "id": "poki-custom-3",
@@ -208,7 +228,7 @@
       "url": "https://poki.com/en/g/gym-masters",
       "type": "Action",
       "openInNewTab": true,
-      "active": true
+      "active": false
     },
     {
       "id": "poki-1",
@@ -217,7 +237,7 @@
       "url": "https://poki.com/en/g/scary-teacher-3d",
       "type": "Game",
       "openInNewTab": true,
-      "active": true
+      "active": false
     },
     {
       "id": "poki-2",
@@ -226,7 +246,7 @@
       "url": "https://poki.com/en/g/perfect-landing-plane-pilot",
       "type": "Racing",
       "openInNewTab": true,
-      "active": true
+      "active": false
     },
     {
       "id": "poki-3",
@@ -235,7 +255,7 @@
       "url": "https://poki.com/en/g/going-up-rooftop",
       "type": "Action",
       "openInNewTab": true,
-      "active": true
+      "active": false
     },
     {
       "id": "poki-4",
@@ -244,7 +264,7 @@
       "url": "https://poki.com/en/g/hills-of-steel",
       "type": "Action",
       "openInNewTab": true,
-      "active": true
+      "active": false
     },
     {
       "id": "poki-5",
@@ -262,7 +282,7 @@
       "url": "https://poki.com/en/g/truck-slam",
       "type": "Racing",
       "openInNewTab": true,
-      "active": true
+      "active": false
     },
     {
       "id": "poki-7",
@@ -271,7 +291,7 @@
       "url": "https://poki.com/en/g/level-devil",
       "type": "Puzzle",
       "openInNewTab": true,
-      "active": true
+      "active": false
     },
     {
       "id": "poki-8",
@@ -280,7 +300,7 @@
       "url": "https://poki.com/en/g/hill-climb-racing-lite",
       "type": "Racing",
       "openInNewTab": true,
-      "active": true
+      "active": false
     },
     {
       "id": "poki-9",
@@ -289,7 +309,7 @@
       "url": "https://poki.com/en/g/mine-and-dig",
       "type": "Puzzle",
       "openInNewTab": true,
-      "active": true
+      "active": false
     },
     {
       "id": "poki-10",
@@ -298,7 +318,7 @@
       "url": "https://poki.com/en/g/subway-surfers",
       "type": "Game",
       "openInNewTab": true,
-      "active": true
+      "active": false
     },
     {
       "id": "poki-11",
@@ -307,7 +327,7 @@
       "url": "https://poki.com/en/g/super-oscar",
       "type": "Game",
       "openInNewTab": true,
-      "active": true
+      "active": false
     },
     {
       "id": "poki-12",
@@ -316,7 +336,7 @@
       "url": "https://poki.com/en/g/capitalist-bus-driver",
       "type": "Racing",
       "openInNewTab": true,
-      "active": true
+      "active": false
     },
     {
       "id": "poki-13",
@@ -325,7 +345,7 @@
       "url": "https://poki.com/en/g/vectaria-io",
       "type": "Action",
       "openInNewTab": true,
-      "active": true
+      "active": false
     },
     {
       "id": "poki-14",
@@ -334,7 +354,7 @@
       "url": "https://poki.com/en/g/cat-gunner-super-zombie-shoot",
       "type": "Action",
       "openInNewTab": true,
-      "active": true
+      "active": false
     },
     {
       "id": "poki-15",
@@ -343,7 +363,7 @@
       "url": "https://poki.com/en/g/fear-response",
       "type": "Action",
       "openInNewTab": true,
-      "active": true
+      "active": false
     }
   ],
   "aboutUs": "ફધબધધબધભ",
