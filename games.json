@@ -11,7 +11,8 @@
       "logo": "https://files.catbox.moe/l1ca18.png",
       "type": "Game",
       "url": "https://ahaanmesaniya-bot.github.io/r7-database/games/build-tower.html",
-      "openDirect": false
+      "openDirect": false,
+      "active": false
     },
     {
       "id": "item_1781515896112",
@@ -19,7 +20,8 @@
       "logo": "https://files.catbox.moe/42xaaq.png",
       "type": "Tournament",
       "url": "https://ahaanmesaniya-bot.github.io/r7-database/games/ludo.html",
-      "openDirect": false
+      "openDirect": false,
+      "active": false
     },
     {
       "id": "item_1781518254142",
@@ -180,6 +182,168 @@
       "type": "Game",
       "url": "https://ahaanmesaniya-bot.github.io/r7-database/games/carrom.html",
       "openDirect": false
+    },
+    {
+      "id": "poki-custom-1",
+      "title": "My Perfect Hotel",
+      "logo": "https://files.catbox.moe/w8i5bq.png",
+      "url": "https://poki.com/en/g/my-perfect-hotel",
+      "type": "Game",
+      "openInNewTab": true,
+      "active": true
+    },
+    {
+      "id": "poki-custom-2",
+      "title": "Burger Bounty",
+      "logo": "https://files.catbox.moe/5tmiud.jpeg",
+      "url": "https://poki.com/en/g/burger-bounty",
+      "type": "Game",
+      "openInNewTab": true,
+      "active": true
+    },
+    {
+      "id": "poki-custom-3",
+      "title": "Gym Masters",
+      "logo": "https://files.catbox.moe/gz8kck.png",
+      "url": "https://poki.com/en/g/gym-masters",
+      "type": "Action",
+      "openInNewTab": true,
+      "active": true
+    },
+    {
+      "id": "poki-1",
+      "title": "Scary Teacher 3D",
+      "logo": "https://files.catbox.moe/mql6cc.png",
+      "url": "https://poki.com/en/g/scary-teacher-3d",
+      "type": "Game",
+      "openInNewTab": true,
+      "active": true
+    },
+    {
+      "id": "poki-2",
+      "title": "Perfect Landing Plane Pilot",
+      "logo": "https://files.catbox.moe/vynmtv.png",
+      "url": "https://poki.com/en/g/perfect-landing-plane-pilot",
+      "type": "Racing",
+      "openInNewTab": true,
+      "active": true
+    },
+    {
+      "id": "poki-3",
+      "title": "Going Up Rooftop",
+      "logo": "https://files.catbox.moe/4kt5ua.jfif",
+      "url": "https://poki.com/en/g/going-up-rooftop",
+      "type": "Action",
+      "openInNewTab": true,
+      "active": true
+    },
+    {
+      "id": "poki-4",
+      "title": "Hills of Steel",
+      "logo": "https://files.catbox.moe/ey72z0.jpeg",
+      "url": "https://poki.com/en/g/hills-of-steel",
+      "type": "Action",
+      "openInNewTab": true,
+      "active": true
+    },
+    {
+      "id": "poki-5",
+      "title": "Urban Racer",
+      "logo": "https://files.catbox.moe/bzsmsp.jfif",
+      "url": "https://poki.com/en/g/urban-racer",
+      "type": "Racing",
+      "openInNewTab": true,
+      "active": true
+    },
+    {
+      "id": "poki-6",
+      "title": "Truck Slam",
+      "logo": "https://files.catbox.moe/cjqrpr.png",
+      "url": "https://poki.com/en/g/truck-slam",
+      "type": "Racing",
+      "openInNewTab": true,
+      "active": true
+    },
+    {
+      "id": "poki-7",
+      "title": "Level Devil",
+      "logo": "https://files.catbox.moe/bkm8ad.png",
+      "url": "https://poki.com/en/g/level-devil",
+      "type": "Puzzle",
+      "openInNewTab": true,
+      "active": true
+    },
+    {
+      "id": "poki-8",
+      "title": "Hill Climb Racing Lite",
+      "logo": "https://files.catbox.moe/qra22z.jpeg",
+      "url": "https://poki.com/en/g/hill-climb-racing-lite",
+      "type": "Racing",
+      "openInNewTab": true,
+      "active": true
+    },
+    {
+      "id": "poki-9",
+      "title": "Mine and Dig",
+      "logo": "https://files.catbox.moe/z7zekg.jfif",
+      "url": "https://poki.com/en/g/mine-and-dig",
+      "type": "Puzzle",
+      "openInNewTab": true,
+      "active": true
+    },
+    {
+      "id": "poki-10",
+      "title": "Subway Surfers",
+      "logo": "https://files.catbox.moe/tjf9ee.png",
+      "url": "https://poki.com/en/g/subway-surfers",
+      "type": "Game",
+      "openInNewTab": true,
+      "active": true
+    },
+    {
+      "id": "poki-11",
+      "title": "Super Oscar",
+      "logo": "https://files.catbox.moe/zzcgjf.png",
+      "url": "https://poki.com/en/g/super-oscar",
+      "type": "Game",
+      "openInNewTab": true,
+      "active": true
+    },
+    {
+      "id": "poki-12",
+      "title": "Capitalist Bus Driver",
+      "logo": "https://files.catbox.moe/5z19g4.jpeg",
+      "url": "https://poki.com/en/g/capitalist-bus-driver",
+      "type": "Racing",
+      "openInNewTab": true,
+      "active": true
+    },
+    {
+      "id": "poki-13",
+      "title": "Vectaria.io",
+      "logo": "https://files.catbox.moe/hp7rgz.png",
+      "url": "https://poki.com/en/g/vectaria-io",
+      "type": "Action",
+      "openInNewTab": true,
+      "active": true
+    },
+    {
+      "id": "poki-14",
+      "title": "Cat Gunner: Super Zombie Shoot",
+      "logo": "https://files.catbox.moe/cthn5j.png",
+      "url": "https://poki.com/en/g/cat-gunner-super-zombie-shoot",
+      "type": "Action",
+      "openInNewTab": true,
+      "active": true
+    },
+    {
+      "id": "poki-15",
+      "title": "Fear Response",
+      "logo": "https://files.catbox.moe/cz3r5r.png",
+      "url": "https://poki.com/en/g/fear-response",
+      "type": "Action",
+      "openInNewTab": true,
+      "active": true
     }
   ],
   "aboutUs": "ફધબધધબધભ",
