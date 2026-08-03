@@ -403,6 +403,14 @@
       "openInNewTab": true,
       "active": false,
       "enabled": false
+    },
+    {
+      "id": "item_1785759851108",
+      "title": "Tic Tac Toe",
+      "logo": "https://files.catbox.moe/7pghw2.jpeg",
+      "type": "Game",
+      "url": "https://ahaanmesaniya-bot.github.io/r7-database/games/tic-tac-toe.html",
+      "openDirect": false
     }
   ],
   "aboutUs": "ફધબધધબધભ",
