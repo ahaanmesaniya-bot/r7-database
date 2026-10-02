@@ -29,11 +29,12 @@
       "id": "item_1782913880128",
       "title": "Nut Sort  Color",
       "logo": "https://files.catbox.moe/70r7ti.jpeg",
-      "type": "Game",
+      "type": "Puzzle",
       "url": "https://ahaanmesaniya-bot.github.io/r7-database/games/nut-sort--color.html",
       "openDirect": false,
       "active": false,
-      "enabled": false
+      "enabled": false,
+      "hero": ""
     },
     {
       "id": "item_1790566314845",
