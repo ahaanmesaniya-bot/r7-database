@@ -39,9 +39,10 @@
       "id": "item_1790566314845",
       "title": "math master",
       "logo": "https://files.catbox.moe/65tgmb.png",
-      "type": "Game",
+      "type": "Puzzle",
       "url": "https://ahaanmesaniya-bot.github.io/r7-database/games/math-master.html",
-      "openDirect": false
+      "openDirect": false,
+      "hero": ""
     }
   ],
   "aboutUs": "ફધબધધબધભ",
