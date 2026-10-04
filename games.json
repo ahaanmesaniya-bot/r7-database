@@ -17,13 +17,14 @@
     },
     {
       "id": "item_1782913805947",
-      "title": "Supermarket Simulator",
-      "logo": "https://files.catbox.moe/cty7cx.jpeg",
+      "title": "Supermarket ultra",
+      "logo": "https://res.cloudinary.com/so9phvfy/image/upload/v1791101643/1000052537.png",
       "type": "Game",
       "url": "https://ahaanmesaniya-bot.github.io/r7-database/games/supermarket-simulator.html",
       "openDirect": false,
       "active": false,
-      "enabled": false
+      "enabled": false,
+      "hero": ""
     },
     {
       "id": "item_1782913880128",
