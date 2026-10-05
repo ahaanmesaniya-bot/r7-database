@@ -14,7 +14,10 @@
       "openDirect": false,
       "active": false,
       "enabled": false,
-      "hidden": true
+      "hidden": true,
+      "hero": "https://files.catbox.moe/y3uaek.jpeg",
+      "featured": true,
+      "new": false
     },
     {
       "id": "item_1782913805947",
