@@ -14,7 +14,7 @@
       "openDirect": false,
       "active": false,
       "enabled": false,
-      "hidden": true,
+      "hidden": false,
       "hero": "https://files.catbox.moe/y3uaek.jpeg",
       "featured": true,
       "new": false
