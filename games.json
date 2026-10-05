@@ -14,7 +14,7 @@
       "openDirect": false,
       "active": false,
       "enabled": false,
-      "hidden": false
+      "hidden": true
     },
     {
       "id": "item_1782913805947",
@@ -26,7 +26,7 @@
       "active": false,
       "enabled": false,
       "hero": "",
-      "hidden": true
+      "hidden": false
     },
     {
       "id": "item_1782913880128",
@@ -38,7 +38,7 @@
       "active": false,
       "enabled": false,
       "hero": "",
-      "hidden": true
+      "hidden": false
     },
     {
       "id": "item_1790566314845",
@@ -48,7 +48,7 @@
       "url": "https://ahaanmesaniya-bot.github.io/r7-database/games/math-master.html",
       "openDirect": false,
       "hero": "",
-      "hidden": true
+      "hidden": false
     }
   ],
   "aboutUs": "ફધબધધબધભ",
