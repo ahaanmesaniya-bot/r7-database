@@ -13,7 +13,8 @@
       "url": "https://ahaanmesaniya-bot.github.io/r7-database/games/snake1.html",
       "openDirect": false,
       "active": false,
-      "enabled": false
+      "enabled": false,
+      "hidden": true
     },
     {
       "id": "item_1782913805947",
