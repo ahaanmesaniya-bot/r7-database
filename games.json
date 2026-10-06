@@ -36,8 +36,9 @@
       "type": "Puzzle",
       "url": "https://ahaanmesaniya-bot.github.io/r7-database/games/math-master.html",
       "openDirect": false,
-      "hero": "",
-      "hidden": false
+      "hero": "https://res.cloudinary.com/so9phvfy/image/upload/v1791291385/1000052739.png",
+      "hidden": false,
+      "featured": true
     },
     {
       "id": "item_1791290666178",
