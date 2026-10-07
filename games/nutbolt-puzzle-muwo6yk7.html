@@ -244,7 +244,8 @@ const store = {
   get(k, d){ try{ const v = localStorage.getItem('ns-' + k); return v === null ? d : JSON.parse(v); }catch(e){ return k in this.mem ? this.mem[k] : d; } },
   set(k, v){ try{ localStorage.setItem('ns-' + k, JSON.stringify(v)); }catch(e){ this.mem[k] = v; } }
 };
-let level = store.get('level', 1), coins = store.get('coins', 100), soundOn = store.get('sound', true), lastSpin = store.get('lastSpin', 0);
+const MAX_LEVEL = 500;   // the game has exactly 500 levels
+let level = Math.min(MAX_LEVEL, Math.max(1, store.get('level', 1))), coins = store.get('coins', 100), soundOn = store.get('sound', true), lastSpin = store.get('lastSpin', 0);
 const inv = store.get('inv3', {undo: 3, redo: 3, hint: 3, bolt: 3});
 let state = [], initial = [], colorOf = [], nutEls = [], nutPos = [], nutHome = [], nutZ = [];
 let selected = -1, busy = false, epoch = 0, history = [], redoStack = [], timers = [], doneSet = new Set(), G = {}, caps = [];
@@ -287,11 +288,9 @@ const sfx = {            // every sound below is one of your own files
 const COLORHEX = {red:'#ff3b30', blue:'#2979ff', green:'#2ecc40', yellow:'#ffd60a', orange:'#ff9500', purple:'#a64dff', cyan:'#22d3ee', brown:'#c4743f', pink:'#ff7eb6', lime:'#a5e000', navy:'#4a63e8', magenta:'#ff2ad4', teal:'#14b8a6', grey:'#c3cad0', lavender:'#b79cff'};
 const nutHex = id => COLORHEX[ASSET.order[colorOf[id]]] || '#ffffff';
 const fx = {
-  cv: null, cx: null, ps: [], wt: [], on: false, dpr: 1, last: 0,
+  cv: null, cx: null, ps: [], on: false, dpr: 1, last: 0,
   init(){ this.cv = document.getElementById('fx'); this.cx = this.cv.getContext('2d'); this.fit(); window.addEventListener('resize', () => this.fit()); },
   fit(){ this.dpr = Math.min(2, window.devicePixelRatio || 1); this.cv.width = Math.round(innerWidth * this.dpr); this.cv.height = Math.round(innerHeight * this.dpr); },
-  later(fn, ms){ this.wt.push(setTimeout(fn, ms)); },
-  stopWin(){ this.wt.forEach(clearTimeout); this.wt = []; this.ps = []; document.getElementById('flash').classList.remove('on'); },
   add(p){ p.t = 0; this.ps.push(p); if(!this.on){ this.on = true; this.last = performance.now(); requestAnimationFrame(t => this.loop(t)); } },
   loop(now){
     const dt = Math.min(.04, (now - this.last) / 1000); this.last = now;
@@ -343,14 +342,17 @@ const fx = {
     for(let i = 0; i < 46; i++){ const a = i / 46 * 6.283 + Math.random() * .1, s = 150 + Math.random() * 190; this.add({k: 'spark', x, y, vx: Math.cos(a) * s, vy: Math.sin(a) * s, g: 220, drag: .965, r: 3.6, c: i % 3 ? col : '#ffffff', life: .9 + Math.random() * .5, star: i % 5 === 0, rot: 0}); }
   },
   coins(x, y){ this.confetti(x, y, 28, ['#ffd23f', '#ffb000', '#fff3a0'], {spread: 3.2, speed: 520, g: 900, size: .9}); this.ring(x, y, '#ffd23f', 90, .5, 6); this.sparks(x, y, 12, '#fff3a0', {speed: 260, life: .7, star: true}); },
+  tm: [],
+  stop(){ this.tm.forEach(clearTimeout); this.tm = []; this.ps.length = 0; const f = document.getElementById('flash'); if(f) f.classList.remove('on'); },   // kill leftover win-celebration (falling confetti etc.)
   win(){
     const f = document.getElementById('flash'); f.classList.remove('on'); void f.offsetWidth; f.classList.add('on');
     const W = innerWidth, H = innerHeight, cols = ['#ff3b30', '#2979ff', '#ffd60a', '#2ecc40', '#ff9500', '#a64dff', '#22d3ee', '#ff7eb6'];
     this.confetti(0, H * .62, 70, cols, {dir: -1.05, spread: .9, speed: 900});
     this.confetti(W, H * .62, 70, cols, {dir: -2.09, spread: .9, speed: 900});
-    for(let i = 0; i < 14; i++) this.later(() => this.confetti(Math.random() * W, -10, 10, cols, {dir: 1.57, spread: .5, speed: 140, g: 60, life: 2.6, size: 1.1}), 250 + i * 170);
-    [[.25,.28],[.75,.22],[.5,.4],[.2,.5],[.8,.46],[.35,.15],[.65,.35],[.12,.3],[.88,.3],[.5,.18]].forEach(([px, py], i) => this.later(() => this.firework(W * px, H * py, cols[(i * 2) % cols.length]), 150 + i * 260));
-    for(let i = 0; i < 10; i++) this.later(() => this.sparks(Math.random() * W, Math.random() * H * .5, 10, '#ffe066', {speed: 120, life: .9, star: true, g: 200}), 300 + i * 220);
+    const T = (fn, ms) => this.tm.push(setTimeout(fn, ms));   // tracked, so the next level can cancel them
+    for(let i = 0; i < 14; i++) T(() => this.confetti(Math.random() * W, -10, 10, cols, {dir: 1.57, spread: .5, speed: 140, g: 60, life: 2.6, size: 1.1}), 250 + i * 170);
+    [[.25,.28],[.75,.22],[.5,.4],[.2,.5],[.8,.46],[.35,.15],[.65,.35],[.12,.3],[.88,.3],[.5,.18]].forEach(([px, py], i) => T(() => this.firework(W * px, H * py, cols[(i * 2) % cols.length]), 150 + i * 260));
+    for(let i = 0; i < 10; i++) T(() => this.sparks(Math.random() * W, Math.random() * H * .5, 10, '#ffe066', {speed: 120, life: .9, star: true, g: 200}), 300 + i * 220);
   }
 };
 /* ---------- helpers ---------- */
@@ -377,23 +379,34 @@ function tween(dur, fn, ease = easeInOut){
 const TIERS = [[1, 4], [40, 5], [80, 6], [140, 7]];
 const tier = l => { let t = TIERS[0]; for(const x of TIERS) if(l >= x[0]) t = x; return t; };
 const capFor = l => tier(l)[1];
-const colorsFor = l => { const t = tier(l), k = l - t[0];   // levels 1-3 easy (2,2,3), then +1 colour per level up to 8, then +1 per 2 levels
-  const n = t[0] === 1 ? (k < 3 ? [2, 2, 3][k] : k < 8 ? k + 1 : 8 + Math.floor((k - 7) / 2)) : 6 + Math.floor(k / 2);
+const colorsFor = l => { const t = tier(l), k = l - t[0];   // medium start: 4 colours at level 1, +1 colour every 4 levels; each bigger-bolt tier restarts higher and keeps growing (+1 per 3 levels)
+  const n = t[0] === 1 ? 4 + Math.floor(k / 4) : ({40: 9, 80: 10, 140: 11}[t[0]] || 11) + Math.floor(k / 3);
   return Math.min(ASSET.order.length, n); };
-const emptiesFor = l => l >= 30 ? 1 : 2;   // from level 30 there is only one spare bolt
+const emptiesFor = l => 2;   // always 2 spare bolts: with only 1, random boards are almost never solvable (tested: 0/30 from 8 colours up)
 const clone = s => s.map(b => b.slice());
 const uniform = b => b.every(id => colorOf[id] === colorOf[b[0]]);
 function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
 
 /* ---------- level generation ---------- */
 function setColors(l){ CAP = capFor(l); const c = colorsFor(l); colorOf = []; for(let k=0;k<c;k++) for(let j=0;j<CAP;j++) colorOf.push(k); return c; }
+/* difficulty shaping: several candidate boards are built, each is solved, and one is picked by how hard it is.
+   normal levels get steadily harder, every 5th level is an easier "breather", every 10th is a "boss" (hardest candidate) */
+const isBoss = l => l % 10 === 0, isBreather = l => l % 5 === 0 && l % 10 !== 0;
+const pctFor = l => isBoss(l) ? 1 : isBreather(l) ? .2 : Math.min(.9, .5 + l * .006);
+const adjSame = st => { let n = 0; for(const b of st) for(let i = 1; i < b.length; i++) if(colorOf[b[i]] === colorOf[b[i - 1]]) n++; return n; };
 function generate(l){
-  const c = setColors(l); let e = emptiesFor(l);
+  const c = setColors(l), e = emptiesFor(l);
   const build = () => { let st, t = 0; do{ const ids = shuffle([...colorOf.keys()]); st = []; for(let b = 0; b < c; b++) st.push(ids.slice(b * CAP, (b + 1) * CAP)); t++; } while(t < 200 && st.some(uniform)); return st; };
-  let st = build();
-  if(e === 1){ let ok = false; for(let i = 0; i < 8 && !(ok = solveHint(st.concat([[]]), true)); i++) st = build(); if(!ok) e = 2; }   // one spare bolt only if the level is provably solvable
-  for(let i = 0; i < e; i++) st.push([]);
-  return st;
+  const withSpare = (st, n) => st.concat(Array.from({length: n}, () => []));
+  const N = l <= 3 ? 3 : 6, t0 = performance.now(), proven = [], loose = [];
+  for(let i = 0; i < N && performance.now() - t0 < 450; i++){
+    const st = build(), m = solveHint(withSpare(st, e), 'len');   // solution length, or -1 if the solver could not prove it
+    const score = Math.max(m, 0) * 2 - adjSame(st) * 1.5;           // longer solution + fewer pre-grouped nuts = harder
+    (m >= 0 ? proven : loose).push({st, score});
+  }
+  const byScore = (x, y) => x.score - y.score;
+  if(proven.length){ proven.sort(byScore); return withSpare(proven[Math.round(pctFor(l) * (proven.length - 1))].st, e); }   // only boards the solver PROVED solvable
+  loose.sort(byScore); return withSpare(loose[Math.round(pctFor(l) * (loose.length - 1))].st, e + 1);   // nothing proven (huge board): one extra spare bolt keeps it safely solvable
 }
 
 /* ---------- geometry ---------- */
@@ -480,7 +493,7 @@ function updateCaps(){
   });
 }
 function refreshUI(){
-  $('#title').textContent = 'Level ' + level;
+  $('#title').textContent = 'Level ' + level + (isBoss(level) ? ' 🔥' : '');
   ['undo','redo','hint'].forEach(k => { $('#' + k + 'N').textContent = inv[k]; $('#' + k + 'N').classList.toggle('zero', inv[k] <= 0); });
   $('#addN').textContent = inv.bolt; $('#addN').classList.toggle('zero', inv.bolt <= 0);
   $('#bUndo').disabled = !history.length || busy; $('#bRedo').disabled = !redoStack.length || busy;
@@ -503,7 +516,7 @@ function validSave(s){
 
 /* ---------- level flow ---------- */
 function startLevel(l, mode = 'new'){
-  epoch++; timers.forEach(clearTimeout); timers = []; pend.length = 0; level = l; store.set('level', l);
+  epoch++; timers.forEach(clearTimeout); timers = []; pend.length = 0; fx.stop(); level = l; store.set('level', l);
   const sv = mode === 'resume' ? store.get('save', null) : null;
   if(sv && sv.level === l && validSave(sv)){ setColors(l); state = clone(sv.state); initial = clone(sv.initial); history = sv.history || []; redoStack = sv.redo || []; }
   else if(mode === 'restart' && initial.length){ setColors(l); state = clone(initial); history = []; redoStack = []; }
@@ -615,7 +628,7 @@ function celebrate(){
 function checkWin(){
   if(state.every(b => !b.length || isDone(b))){
     const done = level, reward = 0;
-    level++; store.set('level', level); store.set('save', null); busy = true;
+    level = Math.min(level + 1, MAX_LEVEL); store.set('level', level); store.set('save', null); busy = true;
     later(() => showVictory(done, reward), 800);
   }
 }
@@ -624,14 +637,14 @@ function checkWin(){
 function solveHint(st0, wantFound){
   const t0 = performance.now(), start = (st0 || state).map(b => b.map(id => colorOf[id]));
   const goal = s => s.every(b => !b.length || (b.length === CAP && b.every(c => c === b[0])));
-  if(goal(start)) return wantFound ? true : null;
+  if(goal(start)) return wantFound === 'len' ? 0 : wantFound ? true : null;
   const hf = s => { let v = 0; for(const b of s){ if(!b.length) continue; let i = 1; while(i < b.length && b[i] === b[0]) i++; v += b.length - i; } return v; };
   const key = s => s.map(b => b.join(',')).sort().join('|');
   const nodes = [{s: start, g: 0, h: hf(start), p: -1, mv: null}], heap = [[nodes[0].g + 3 * nodes[0].h, 0]], seen = new Set([key(start)]);
   const push = it => { heap.push(it); let i = heap.length - 1; while(i > 0){ const p = (i - 1) >> 1; if(heap[p][0] <= heap[i][0]) break; [heap[p], heap[i]] = [heap[i], heap[p]]; i = p; } };
   const pop = () => { const top = heap[0], last = heap.pop(); if(heap.length){ heap[0] = last; let i = 0; for(;;){ let l = 2*i+1, r = l+1, m = i; if(l < heap.length && heap[l][0] < heap[m][0]) m = l; if(r < heap.length && heap[r][0] < heap[m][0]) m = r; if(m === i) break; [heap[m], heap[i]] = [heap[i], heap[m]]; i = m; } } return top; };
   let best = 0, found = -1;
-  while(heap.length && nodes.length < 60000 && performance.now() - t0 < (wantFound ? 250 : 240)){
+  while(heap.length && nodes.length < 60000 && performance.now() - t0 < (wantFound === 'len' ? 90 : wantFound ? 250 : 240)){
     const idx = pop()[1], nd = nodes[idx], s = nd.s;
     if(nd.h < nodes[best].h) best = idx;
     if(goal(s)){ found = idx; break; }
@@ -650,6 +663,7 @@ function solveHint(st0, wantFound){
       }
     }
   }
+  if(wantFound === 'len'){ if(found < 0) return -1; let n = 0, at = found; while(nodes[at].p >= 0){ n++; at = nodes[at].p; } return n; }
   if(wantFound) return found >= 0;
   let at = found >= 0 ? found : best; if(at === 0) return null;
   while(nodes[at].p > 0) at = nodes[at].p;
@@ -673,7 +687,7 @@ function show(screen){
   if(screen === 'home'){ buildHero(); updateSpinUI(); }
 }
 function startGame(){ sfx.tap(); show('game'); requestAnimationFrame(() => startLevel(level, 'resume')); }
-function goHome(){ fx.stopWin(); epoch++; busy = false; timers.forEach(clearTimeout); timers = []; clearHint(); modal('#winM', false); modal('#setM', false); show('home'); }
+function goHome(){ epoch++; busy = false; timers.forEach(clearTimeout); timers = []; clearHint(); modal('#winM', false); modal('#setM', false); show('home'); }
 
 /* ---- hero: three little bolts, one nut floating over the first ---- */
 function buildHero(){
@@ -810,11 +824,13 @@ $('#bHint').onclick = async () => {
 
 /* ---- victory ---- */
 function showVictory(done, reward){
-  $('#winT').textContent = 'Level ' + done + ' complete';
-  $('#winPrize').innerHTML = '';
+  const fin = done >= MAX_LEVEL;   // last level: finale instead of "next level"
+  $('#winT').textContent = fin ? '\u{1F3C6} Saare ' + MAX_LEVEL + ' level poore!' : 'Level ' + done + ' complete';
+  $('#winPrize').textContent = fin ? 'Aapne poora game jeet liya. Badhai ho!' : '';
+  $('#bNext').style.display = fin ? 'none' : '';
   sfx.win(); fx.win(); buzz([80, 50, 80, 50, 120, 50, 250]); modal('#winM', true); busy = false;
 }
-$('#bNext').onclick = () => { fx.stopWin(); modal('#winM', false); sfx.tap(); startLevel(level, 'new'); };
+$('#bNext').onclick = () => { modal('#winM', false); sfx.tap(); startLevel(level, 'new'); };
 $('#wHome').onclick = goHome;
 
 /* ---- input in the game ---- */
