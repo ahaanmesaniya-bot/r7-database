@@ -61,6 +61,11 @@
       "id": "cat_1790935693352",
       "name": "Puzzle",
       "icon": "https://res.cloudinary.com/so9phvfy/image/upload/v1790935011/1000052442.png"
+    },
+    {
+      "id": "cat_1791353640538",
+      "name": "Block build",
+      "icon": "https://res.cloudinary.com/so9phvfy/image/upload/v1791353600/1000052753.png"
     }
   ]
 }
