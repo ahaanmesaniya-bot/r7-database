@@ -306,7 +306,7 @@ function draw(){
 const WDH=$('wd').innerHTML;
 function checkWin(){
   if(over||arrows.some(a=>!a.gone))return;
-  over=true;level++;coins+=20+10*Math.max(1,hearts);save();try{localStorage.setItem('taa_level',level)}catch(e){}
+  over=true;level++;save();try{localStorage.setItem('taa_level',level)}catch(e){}
   const w=$('wd');w.style.display='block';SFX.winG();
   for(let i=0;i<7;i++)setTimeout(()=>{SFX.fw();burst(cell*N*(.15+Math.random()*.7),cell*N*(.15+Math.random()*.6),26,['#ffd23f','#ff7aa8','#7ae582','#b388ff','#4dd0e1'],5)},i*170);
   setTimeout(()=>{w.style.display='none';show('Level Completed!','New Game',false);confetti()},1300);
