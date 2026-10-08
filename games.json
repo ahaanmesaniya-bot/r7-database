@@ -57,6 +57,16 @@
       "type": "Game",
       "url": "https://ahaanmesaniya-bot.github.io/r7-database/games/hill-adventure-muxqm1vd.html",
       "openDirect": false
+    },
+    {
+      "id": "item_1791429804718",
+      "title": "Arrow puzzle",
+      "logo": "https://res.cloudinary.com/so9phvfy/image/upload/v1791429690/1000052836.jpg",
+      "hero": "https://res.cloudinary.com/so9phvfy/image/upload/v1791429627/1000052853.png",
+      "featured": true,
+      "type": "Puzzle",
+      "url": "https://ahaanmesaniya-bot.github.io/r7-database/games/arrow-puzzle-muyz1shg.html",
+      "openDirect": false
     }
   ],
   "aboutUs": "ફધબધધબધભ",
