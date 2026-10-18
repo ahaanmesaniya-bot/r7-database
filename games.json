@@ -67,7 +67,7 @@
       "type": "Game",
       "url": "https://splendid-dasik-efa757.netlify.app",
       "openDirect": false,
-      "openInNewTab": false,
+      "openInNewTab": true,
       "hidden": false,
       "new": false
     }
