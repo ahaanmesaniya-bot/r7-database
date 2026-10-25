@@ -47,7 +47,10 @@
       "type": "Block build",
       "url": "https://ahaanmesaniya-bot.github.io/r7-database/games/mini-block-world-muxot3z5.html",
       "openDirect": false,
-      "hidden": false
+      "hidden": false,
+      "new": false,
+      "openInNewTab": false,
+      "v": 1792923855749
     },
     {
       "id": "item_1791429804718",
