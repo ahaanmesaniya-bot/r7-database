@@ -1132,17 +1132,41 @@ const h0=Math.max(9,Math.min(12,rawH(0,0)));
 function inFlat(gx,gz){return false;}
 const BN={swamp:'Dalaldal (Swamp) 🐸',mushroom:'Mushroom Jungle 🍄',savanna:'Sookha Savanna 🦒',tropical:'Tropical Dweep 🏝',river:'Nadi / Dariya (River) 🌊',desert:'Registaan (Desert) 🏜',snowy:'Barfeela ilaaka ❄',taiga:'Taiga (Spruce jungle) 🌲',cherry:'Cherry Grove 🌸',forest:'Ghana Jungle 🌳',plains:'Maidaan (Plains) 🌾',mixed:'Hara-bhara ilaaka 🌿'};let bioT=0,lastBio='';
 function riverV(gx,gz){return Math.min(Math.abs(vnoise(gx/85+211,gz/85+97)-.5),Math.abs(vnoise(gx/62+57,gz/62+301)-.5)*1.12);}
-function biomeAt(gx,gz){if(Math.max(Math.abs(gx),Math.abs(gz))<=26)return 'mixed';
+const _baC=new Map(),_chC=new Map(),_rgC=new Map();
+function biomeAt(gx,gz){const kk=(gx+30000)*60000+(gz+30000);let v=_baC.get(kk);if(v!==undefined)return v;
+  v=biomeAtRaw(gx,gz);if(_baC.size>400000)_baC.clear();_baC.set(kk,v);return v;}
+function biomeAtRaw(gx,gz){if(Math.max(Math.abs(gx),Math.abs(gz))<=26)return 'mixed';
   if(riverV(gx,gz)<.04)return 'river';
   return bioPick(gx,gz);}
-function colH(gx,gz){let h=rawH(gx,gz);const d=Math.max(Math.abs(gx),Math.abs(gz));if(d<=7)h=h0;else if(d<=12){h=Math.round(h0+(h-h0)*(d-7)/5);}
+function colH(gx,gz){const kk=(gx+30000)*60000+(gz+30000);let v=_chC.get(kk);if(v!==undefined)return v;
+  v=colHRaw(gx,gz);if(_chC.size>400000)_chC.clear();_chC.set(kk,v);return v;}
+function colHRaw(gx,gz){let h=rawH(gx,gz);const d=Math.max(Math.abs(gx),Math.abs(gz));if(d<=7)h=h0;else if(d<=12){h=Math.round(h0+(h-h0)*(d-7)/5);}
   {const sd=Math.hypot(gx,gz-70);if(sd<50){const r=Math.min(1,(1-sd/50)*3);h=Math.round(h*(1-r)+(SEA-5)*r);}}
   if(d>26){const rv=riverV(gx,gz);if(rv<.1){const k0=Math.max(0,Math.min(1,(rv-.035)/.065)),k=k0*k0*(3-2*k0),tg=SEA-3;if(h>tg)h=Math.round(tg*(1-k)+h*k);}}
-  if(d>26){const b2=biomeAt(gx,gz);if(b2!=='river')h=bioH(gx,gz,h,b2);}
+  if(d>26){const b2=biomeAt(gx,gz);if(b2!=='river'){const h1=h;h=bioH(gx,gz,h1,b2);
+    if(WT==='mix'){const rg=regionAt(gx,gz);if(rg.k>0&&rg.b===b2&&rg.b2!==b2)h=Math.round(h*(1-rg.k)+bioH(gx,gz,h1,rg.b2)*rg.k);}}}
   return h;}
 function isDesert(gx,gz,h){return biomeAt(gx,gz)==='desert'&&h>=8&&h<=14&&Math.max(Math.abs(gx),Math.abs(gz))>13;}
 // ======================= NAYE BIOME: SWAMP, MUSHROOM, SAVANNA, TROPICAL (palm+coral), SAKURA =======================
+// ---- BADE BIOME ILAAKE: har biome door-door tak failta hai, phir agla biome wahin se shuru ----
+const RG_CELL=120,RG_LIST=['forest','plains','desert','snowy','taiga','cherry','swamp','mushroom','savanna','tropical'];
+function rgPt(i,j){return [(i+.2+.6*hash(i*3.7+1.3,j*5.3+2.9))*RG_CELL,(j+.2+.6*hash(i*8.1+4.4,j*2.7+7.7))*RG_CELL];}
+function rgNear(gx,gz){const ci=Math.floor(gx/RG_CELL),cj=Math.floor(gz/RG_CELL);let d1=1e9,d2=1e9,c1=null,c2=null;
+  for(let i=ci-1;i<=ci+1;i++)for(let j=cj-1;j<=cj+1;j++){const p=rgPt(i,j),d=Math.hypot(gx-p[0],gz-p[1]);
+    if(d<d1){d2=d1;c2=c1;d1=d;c1=[i,j];}else if(d<d2){d2=d;c2=[i,j];}}
+  return {c1:c1,c2:c2,d1:d1,d2:d2};}
+let _rgHome=null;
+function rgCellBio(c){if(!_rgHome)_rgHome=rgNear(0,0).c1;
+  if(c[0]===_rgHome[0]&&c[1]===_rgHome[1])return 'mixed';
+  return RG_LIST[Math.floor(hash(c[0]*7.13+11.5,c[1]*3.31+5.5)*RG_LIST.length)%RG_LIST.length];}
+function regionAt(gx,gz){const kk=(gx+30000)*60000+(gz+30000);let r=_rgC.get(kk);if(r)return r;
+  const n=rgNear(gx,gz),b=rgCellBio(n.c1),b2=rgCellBio(n.c2),bd=(n.d2-n.d1)/2;
+  r={b:b,b2:b2,k:(b!==b2&&bd<10)?.5*(1-bd/10):0};
+  if(_rgC.size>300000)_rgC.clear();_rgC.set(kk,r);return r;}
 function bioPick(gx,gz){
+  if(WT!=='mix'){const w=vnoise(gx/120+5,gz/120+9);if(w<.78){return WT==='sakura'?'cherry':WT;}}
+  return regionAt(gx,gz).b;}
+function bioPickOld(gx,gz){
   const t=vnoise(gx/90+13,gz/90+29),m=vnoise(gx/70+51,gz/70+7),c=vnoise(gx/55+101,gz/55+77),e=vnoise(gx/64+301,gz/64+411),s=vnoise(gx/58+701,gz/58+17);
   if(WT!=='mix'){const w=vnoise(gx/120+5,gz/120+9);if(w<.78){return WT==='sakura'?'cherry':WT;}}
   if(s>.7)return 'swamp';
@@ -1370,6 +1394,29 @@ function relight(){
   }
 }
 relight();
+// sirf aas-paas ki roshni dobara banao (poori duniya nahi) - isse lag nahi hota
+function relightLocal(px,pz){
+  const R=16,x0=Math.max(0,px-R),x1=Math.min(W-1,px+R),z0=Math.max(0,pz-R),z1=Math.min(D-1,pz+R),WD=W*D;
+  for(let y=0;y<H;y++)for(let z=z0;z<=z1;z++){const b=(y*D+z)*W;light.fill(0,b+x0,b+x1+1);}
+  lq.length=0;
+  srcs.forEach(function(lv,i){const x=i%W,z=Math.floor(i/W)%D;if(x>=x0&&x<=x1&&z>=z0&&z<=z1){light[i]=lv;lq.push(i);}});
+  for(let y=0;y<H;y++)for(let z=z0-1;z<=z1+1;z++)for(let x=x0-1;x<=x1+1;x++){
+    if(x>=x0&&x<=x1&&z>=z0&&z<=z1)continue;
+    if(x<0||z<0||x>=W||z>=D)continue;
+    const i=(y*D+z)*W+x;if(light[i]>1)lq.push(i);}
+  let qh=0;
+  while(qh<lq.length){
+    const i=lq[qh++];const l=light[i];if(l<=1)continue;
+    const x=i%W,z=Math.floor(i/W)%D,y=Math.floor(i/WD);
+    for(let d=0;d<6;d++){
+      const nx=x+(d===0?1:d===1?-1:0),ny=y+(d===2?1:d===3?-1:0),nzz=z+(d===4?1:d===5?-1:0);
+      if(nx<0||nzz<0||ny<0||nx>=W||nzz>=D||ny>=H)continue;
+      const ni=idx(nx,ny,nzz);const t=blocks[ni];
+      if(t&&!TR[t])continue;
+      if(light[ni]<l-1){light[ni]=l-1;lq.push(ni);}
+    }
+  }
+}
 function lt(x,y,z){if(x<0||z<0||y<0||x>=W||z>=D||y>=H)return 0;return light[idx(x,y,z)];}
 
 // ======================= MESHING =======================
@@ -1490,11 +1537,26 @@ function boxFaces(x,y,z,x0,y0,z0,x1,y1,z1,T,B,lv){
     pushQ(B,P4,U4,S4,L4,false);
   }
 }
+// ---- Sidhi kone par mud jaati hai (inner/outer corner), Minecraft jaisa ----
+const STH=[[.5,0,1,1],[0,0,.5,1],[0,.5,1,1],[0,0,1,.5]];
+function stairConn(x,y,z,Bk){
+  const f0=Bk.ex.stair,f=f0%4,up=f0>=4;
+  function st(dx,dz){const t=get(x+dx,y,z+dz);if(!t)return null;const B=BL[t];if(!B||B.shape!==4)return null;const g=B.ex.stair;return ((g>=4)===up)?g%4:null;}
+  const b=DIR[f];let n=st(b[0],b[1]);
+  if(n!==null&&(n<2)!==(f<2)){const o=DIR[n^1];if(st(o[0],o[1])!==f)return {t:'o',c:n};}
+  n=st(-b[0],-b[1]);
+  if(n!==null&&(n<2)!==(f<2)){const o=DIR[n];if(st(o[0],o[1])!==f)return {t:'i',c:n};}
+  return null;}
+function stairUp(f,cn){
+  const bh=STH[f];if(!cn)return [bh];
+  const ch=STH[cn.c],fh=STH[f^1];
+  const q=function(a,c){return [Math.max(a[0],c[0]),Math.max(a[1],c[1]),Math.min(a[2],c[2]),Math.min(a[3],c[3])];};
+  return cn.t==='o'?[q(bh,ch)]:[bh,q(fh,ch)];}
 function stairShape(x,y,z,Bk,B){
   const f0=Bk.ex.stair,f=f0%4,up=f0>=4,T=[Bk.top,Bk.side,Bk.bot],lv=lt(x,y,z);
-  const bx0=f===0?.5:0,bz0=f===2?.5:0,bx1=f===1?.5:1,bz1=f===3?.5:1;
-  if(up){boxFaces(x,y,z,0,.5,0,1,1,1,T,B,lv);boxFaces(x,y,z,bx0,0,bz0,bx1,.5,bz1,T,B,lv);}
-  else{boxFaces(x,y,z,0,0,0,1,.5,1,T,B,lv);boxFaces(x,y,z,bx0,.5,bz0,bx1,1,bz1,T,B,lv);}
+  const U=stairUp(f,stairConn(x,y,z,Bk));
+  if(up){boxFaces(x,y,z,0,.5,0,1,1,1,T,B,lv);U.forEach(function(r){boxFaces(x,y,z,r[0],0,r[1],r[2],.5,r[3],T,B,lv);});}
+  else{boxFaces(x,y,z,0,0,0,1,.5,1,T,B,lv);U.forEach(function(r){boxFaces(x,y,z,r[0],.5,r[1],r[2],1,r[3],T,B,lv);});}
 }
 // ---- fence / jaali / lantern: aas-paas ke block se jud jaate hain ----
 function fconn(x,y,z,Bk){
@@ -1537,6 +1599,8 @@ const PBC={};
 function partBoxes(t,x,y,z){
   const Bk=BL[t];if(!Bk)return null;const sh=Bk.shape;if(!sh||sh===1||sh===2)return null;
   if(sh===16||sh===17)return connBoxes(Bk,x,y,z);
+  if(sh===4&&x!==undefined){const f0=Bk.ex.stair,f=f0%4,U=stairUp(f,stairConn(x,y,z,Bk));
+    return f0>=4?[[0,.5,0,1,1,1]].concat(U.map(function(r){return [r[0],0,r[1],r[2],.5,r[3]];})):[[0,0,0,1,.5,1]].concat(U.map(function(r){return [r[0],.5,r[1],r[2],1,r[3]];}));}
   let r=PBC[t];if(r!==undefined)return r;
   const ex=Bk.ex||{};r=null;
   if(sh===4){const f0=ex.stair,f=f0%4,up=f0>=4,a0=f===0?.5:0,c0=f===2?.5:0,a1=f===1?.5:1,c1=f===3?.5:1;
@@ -1658,14 +1722,15 @@ function setBlock(x,y,z,t){
   const wasL=LVL[old]||0,isL=LVL[t]||0;
   if(isL)srcs.set(i,isL);else srcs.delete(i);
   const oo=old&&!TR[old],no=t&&!TR[t];
-  if(wasL||isL||(!!oo!==!!no&&srcs.size)){relight();rebuildRange(x,z,15);}
+  if(wasL||isL||(!!oo!==!!no&&srcs.size)){relightLocal(x,z);rebuildRange(x,z,15);}
   else rebuildAround(x,z);
 }
 
 // ======================= RENDERER / SKY =======================
 const canvas=document.getElementById('c');
-const renderer=new THREE.WebGLRenderer({canvas:canvas,antialias:true});
-renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
+const _touch=!!(window.matchMedia&&matchMedia('(pointer:coarse)').matches);
+const renderer=new THREE.WebGLRenderer({canvas:canvas,antialias:!_touch,powerPreference:'high-performance'});
+renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,_touch?1.5:2));
 const scene=new THREE.Scene();
 scene.background=new THREE.Color(0x87ceeb);
 const camera=new THREE.PerspectiveCamera(72,1,0.05,170);
@@ -1887,11 +1952,11 @@ const P={x:spawnPt.x,y:spawnPt.y,z:spawnPt.z,vx:0,vy:0,vz:0,yaw:0,pitch:0,ground
 let spawn={x:spawnPt.x,y:spawnPt.y,z:spawnPt.z};
 const RD=5;
 function manageChunks(budget){
-  const pcx=Math.floor(P.x/CS),pcz=Math.floor(P.z/CS),nx=W/CS,nz=D/CS;let n=0;
+  const _mt0=performance.now();const pcx=Math.floor(P.x/CS),pcz=Math.floor(P.z/CS),nx=W/CS,nz=D/CS;let n=0;
   for(let d=0;d<=RD&&n<budget;d++)for(let dx=-d;dx<=d&&n<budget;dx++)for(let dz=-d;dz<=d&&n<budget;dz++){
     if(Math.max(Math.abs(dx),Math.abs(dz))!==d)continue;
     const cx=pcx+dx,cz=pcz+dz;if(cx<0||cz<0||cx>=nx||cz>=nz)continue;
-    if(!chunks[cx+','+cz]){buildChunk(cx,cz);n++;}
+    if(!chunks[cx+','+cz]){buildChunk(cx,cz);n++;if(budget<100&&performance.now()-_mt0>6)return;}
   }
 }
 function unloadChunks(){
@@ -3600,6 +3665,14 @@ function useAction(){
      if(Bk.food)feedVillager(A.a,id);
      else{selV=Math.max(0,ANI.filter(function(a){return a.type==='villager';}).indexOf(A.a));openCmd();}
      return;}}
+  if(Bk.item&&Bk.food&&!MB.creative&&hunger<20){
+    // khana: kisi bhi jagah khao (block par nishana lagana zaroori nahi)
+    const tbi=target?get(target.x,target.y,target.z):0,tb0=tbi?BL[tbi]:null;
+    const inter=!!(tb0&&tb0.ex&&(tb0.ex.chest||tb0.ex.furnace||tb0.ex.mach||tb0.ex.door||tb0.ex.chair!==undefined));
+    // beej/aalu/gajar lagana: khet (farmland) par, ya zameen ko seedha neeche dekh kar
+    const plantable=!!(Bk.plant&&target&&(tbi===ID.farmland||((tbi===ID.grass||tbi===ID.dirt)&&P.pitch<-.8))&&get(target.x,target.y+1,target.z)===0);
+    if(!inter&&!plantable){eat(id);return;}
+  }
   if(target){const tb=BL[get(target.x,target.y,target.z)];
     if(tb&&tb.ex&&tb.ex.chest){sfx.chest(1);openChest(target.x,target.y,target.z);chUI.firstElementChild.style.animation='none';void chUI.offsetWidth;chUI.firstElementChild.style.animation='';chUI.style.display='flex';return;}
     if(tb&&tb.ex&&tb.ex.furnace){sfx.open();openFurn(target.x,target.y,target.z);return;}
@@ -3690,7 +3763,7 @@ function frame(now){
   // world badhao + chunks
   if(P.x<24)expand(-1,0);else if(P.x>W-24)expand(1,0);
   if(P.z<24)expand(0,-1);else if(P.z>D-24)expand(0,1);
-  manageChunks(2);
+  manageChunks(8);
   // movement
   let fx=0,fz=0;
   if(!invOpen&&!sleeping){
@@ -3750,7 +3823,7 @@ function frame(now){
     if(a.dead){scene.remove(a.g);ANI.splice(i,1);}
   }
   spawnT+=dt;
-  zT+=dt;uT+=dt;tntTick(dt);saveT+=dt;if(saveT>8){saveT=0;saveGame();}
+  zT+=dt;uT+=dt;tntTick(dt);saveT+=dt;if(saveT>25){saveT=0;if(window.requestIdleCallback)requestIdleCallback(saveGame,{timeout:3000});else saveGame();}
   if(uT>=1.5){uT=0;unloadChunks();}
   if(zT>=3){zT=0;
     const night=dayF<.4,zc=ANI.filter(function(a){return a.type==='zombie';}).length;
@@ -4678,6 +4751,8 @@ function renderHome(){
     r.querySelector('.wn').textContent=w.name;
     el.appendChild(r);});}
 function wDelete(id){
+  if(id===WCUR)window.__noSave=true;
+  window.__delKeys=(window.__delKeys||[]).concat([wKeyOf(id),wSpawnKey(id)]);
   try{localStorage.removeItem(wKeyOf(id));localStorage.removeItem(wSpawnKey(id));}catch(e){}
   const i=WORLDS.findIndex(function(w){return w.id===id;});if(i<0)return;
   WORLDS.splice(i,1);
@@ -4701,8 +4776,10 @@ home.addEventListener('click',function(e){
   if(a==='play'){if(id===WCUR){document.getElementById('play').click();}else worldReload(id);return;}
   if(a==='mode'){const w=WORLDS.find(function(x){return x.id===id;});w.creative=!w.creative;if(id===WCUR)setCreative(w.creative,true);wSave();renderHome();return;}
   if(a==='del'){
-    if(delArm===id){delArm=null;wDelete(id);return;}
-    delArm=id;b.textContent='Pakka?';clearTimeout(delT);delT=setTimeout(function(){delArm=null;renderHome();},3000);return;}});
+    const w0=WORLDS.find(function(x){return x.id===id;});
+    let ok=true;try{ok=confirm('"'+(w0?w0.name:'World')+'" ko hamesha ke liye delete karein?');}catch(e){ok=true;}
+    if(ok)wDelete(id);
+    return;}});
 document.getElementById('play').addEventListener('click',function(){
   WORLD.t=Date.now();wSave();try{document.exitPointerLock&&0;}catch(e){}});
 function setCreative(on,quiet){
@@ -4710,7 +4787,7 @@ function setCreative(on,quiet){
   if(!quiet)toast(on?'🛠 Creative Mode: udo, kuchh bhi banao, koi nuksan nahi':'⚔ Survival Mode: bhookh aur nuksan chalu');
   if(on&&!flying)toggleFly();else if(!on&&flying)toggleFly();
   refreshMenuBtns();}
-window.addEventListener('pagehide',function(){wSave();});
+window.addEventListener('pagehide',function(){wSave();try{(window.__delKeys||[]).forEach(function(k){localStorage.removeItem(k);});}catch(e){}});
 
 // ---- button layout (customise) ----
 const UIIDS=['stick','jump','brk','plc','fly','dwn','eatbtn','cmdbtn','mbgear','hotbar','clock','cpr','cph','cexit','jb1','jb2','jb3','dbtn','stats'];
