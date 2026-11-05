@@ -881,6 +881,45 @@ CAT='Naye Blocks (Sajawat)';
 reg('leaves_sakura','Sakura Patte 🌸','sakura_l');
 reg('mushroom','Mushroom Block 🍄',['mush_top','mush_side','mushstem_t'],{glow:1,light:12});reg('mushstem','Mushroom Tana','mushstem_t',{light:9});
 reg('vine','Vine Block 🌿 (latakne wali bel)','vine_t',{sh:1,ns:1,ex:{vine:1}});
+(function(){
+const GA=[48,128,44],GB=[60,150,52],GD=[30,95,35],GL=[92,178,72];
+const plus=function(x,y,cx,cy){return Math.abs(x-cx)+Math.abs(y-cy)<=1;};
+// (sab tile poori oonchai ke hain, taaki neeche rakhne par aapas mein jud jaayein)
+// 1) Fold wali bel: zigzag tana + dono taraf mudi hui patti
+tile('vine_fold_t',function(x,y,r){
+  const sx=7+((y>>2)&1);
+  if(x===sx||x===sx+1)return nz(GD,10,r);
+  const k=y>>2,dy=y&3,side=(k&1)?1:-1,L=2+Math.floor(hq(k,7)*2);
+  const d=side>0?(x-(sx+2)):((sx-1)-x);
+  if(d>=0&&d<L-(dy===0||dy===3?1:0))return nz(dy===0?GL:(dy===3?GD:GA),12,r);
+  return NONE;});
+// 2) Gulabi phool wali bel
+tile('vine_pink_t',function(x,y,r){
+  if(plus(x,y,4,6)||plus(x,y,10,3)||plus(x,y,3,11)||plus(x,y,11,9))
+    return ((x===4&&y===6)||(x===10&&y===3)||(x===3&&y===11)||(x===11&&y===9))?[255,225,80]:nz([240,120,170],12,r);
+  if(x===3||x===4||x===10||x===11)return nz(GA,14,r);
+  if((x===2||x===5||x===9||x===12)&&hq(x,y)>.6)return nz(GB,12,r);
+  return NONE;});
+// 3) Peele phool wali bel
+tile('vine_yellow_t',function(x,y,r){
+  if(plus(x,y,6,3)||plus(x,y,10,8)||plus(x,y,5,11)||plus(x,y,12,13))
+    return ((x===6&&y===3)||(x===10&&y===8)||(x===5&&y===11)||(x===12&&y===13))?[255,140,30]:nz([255,235,90],10,r);
+  if(x===6||x===7||x===12||x===1)return nz(GB,14,r);
+  if((x===5||x===8||x===11||x===13)&&hq(x,y)>.55)return nz(GL,12,r);
+  return NONE;});
+// 4) Jamuni phool ke guchchhe (wisteria)
+tile('vine_purple_t',function(x,y,r){
+  const cl=function(cx,y0){const t=y-y0;if(t<0||t>10)return false;const w=Math.max(0,3-Math.floor(t/3));return Math.abs(x-cx)<=w;};
+  if(cl(4,1)||cl(11,3)||cl(8,4))
+    return ((x+y)%3===0)?nz([185,130,235],14,r):nz([140,80,195],14,r);
+  if(x===4||x===11||x===8)return nz(GD,10,r);
+  if(hq(x,y)>.8&&(x===3||x===5||x===10||x===12||x===7||x===9))return nz(GB,12,r);
+  return NONE;});
+reg('vine_fold','Vine Fold 🌿 (mudi hui patti wali bel)','vine_fold_t',{sh:1,ns:1,ex:{vine:1}});
+reg('vine_pink','Vine Gulabi Phool 🌸 (phool wali bel)','vine_pink_t',{sh:1,ns:1,ex:{vine:1}});
+reg('vine_yellow','Vine Peele Phool 🌼 (phool wali bel)','vine_yellow_t',{sh:1,ns:1,ex:{vine:1}});
+reg('vine_purple','Vine Jamuni Guchchhe 💜 (latakte phool)','vine_purple_t',{sh:1,ns:1,ex:{vine:1}});
+})();
 reg('mossystone','Mossy Stone 🪨','mossystone_t');
 reg('lily','Lily Pad 🪷 (paani par)','lily_t',{sh:14,ns:1,ex:{lily:1}});
 reg('drygrass','Dry Grass 🌾 (sookha maidan)',['drygrass_top','drygrass_side','dirt']);
@@ -1084,7 +1123,7 @@ reg('anvil','Anvil (sajawat)',['anvil_top','anvil_s','anvil_s']);
 reg('enchtable','Enchanting Table (sajawat)',['ench_top','ench_side','ench_side']);
 reg('loom','Loom (sajawat)',['loom_top','loom_side','loom_top']);
 reg('barrel','Barrel (sajawat)',['barrel_top','barrel_side','barrel_top']);
-reg('hopper','Hopper (sajawat)',['hopper_top','hopper_side','hopper_side']);
+reg('hopper','Hopper ⏬ (chest ke neeche lagao: upar ke chest ka saman neeche ke chest mein jaata hai)',['hopper_top','hopper_side','hopper_side']);
 reg('dispenser','Dispenser (sajawat)','disp_front');
 reg('trapdoor','Trap Door (sajawat)','trap_t',{sh:14,ns:1,ex:{trap:1}});
 reg('plate','Pressure Plate (sajawat)','plate_t',{sh:9,ns:1,ex:{carpet:1}});
@@ -1358,7 +1397,7 @@ CAT=oc;
     reg('jaali_2','Jaali Grid (lohe ki jaali)','jaali2_t',{tr:1,sh:17});
     reg('jaali_3','Jaali Neeli Naqqashi (sajawati)','jaali3_t',{tr:1,sh:17});
     reg('jaali_4','Jaali Sunehri Naqqashi (sajawati)','jaali4_t',{tr:1,sh:17});
-    [ID.bars,ID.jaali_2,ID.jaali_3,ID.jaali_4].forEach(function(id,k){const b=BL[id];b.top=b.side=b.bot=TI.inv_t;TR[id]=true;b.ex=b.ex||{};b.ex.ji=k;JK[id]=k;});
+    [ID.bars,ID.jaali_2,ID.jaali_3,ID.jaali_4].forEach(function(id,k){const b=BL[id];b.top=b.side=b.bot=TI.inv_t;TR[id]=true;b.ex=b.ex||{};b.ex.ji=k;JK[id]=k;b.hidden=true;});
     CAT=oc;})();
   // purane (portal wale) save ke ID naye layout mein badalna
   window.__legacyFix=function(d){
@@ -1988,7 +2027,7 @@ function makeAcacia(x,h,z){
   for(let dx=-3;dx<=3;dx++)for(let dz=-3;dz<=3;dz++){if(Math.abs(dx)+Math.abs(dz)<=4)setIfAir(x+dx,h+th+1,z+dz,ID.leaves_oak);if(Math.abs(dx)<=1&&Math.abs(dz)<=1)setIfAir(x+dx,h+th+2,z+dz,ID.leaves_oak);}}
 function addVines(x,h,z,th){
   for(let k=0;k<7;k++){const a=hash(x*3.3+k,z*1.9)*6.283,r=1+Math.floor(hash(x+k*7,z*2.1)*2),vx=x+Math.round(Math.cos(a)*r),vz=z+Math.round(Math.sin(a)*r),len=2+Math.floor(hash(vx*1.7,vz*1.3)*3);
-    for(let i=0;i<len;i++){const yy=h+th-1-i;if(blocks[idx(vx,yy,vz)]===0&&yy>h+1)put(vx,yy,vz,ID.vine);}}}
+    for(let i=0;i<len;i++){const yy=h+th-1-i;if(blocks[idx(vx,yy,vz)]===0&&yy>h+1)put(vx,yy,vz,ID[['vine','vine_fold','vine_pink','vine_yellow','vine_purple'][Math.floor(hash(vx*2.9,vz*4.1)*5)]]);}}}
 function makeMushHouse(x,h,z){
   for(let dx=-2;dx<=2;dx++)for(let dz=-2;dz<=2;dz++)put(x+dx,h,z+dz,ID.moss);
   for(let y=1;y<=4;y++)for(let dx=-2;dx<=2;dx++)for(let dz=-2;dz<=2;dz++){if(Math.abs(dx)===2||Math.abs(dz)===2){if(!(dx===0&&dz===2&&y<=2)&&!(Math.abs(dx)===2&&dz===0&&y===3))put(x+dx,h+y,z+dz,ID.mushstem);}else if(y<4)put(x+dx,h+y,z+dz,0);}
@@ -2955,6 +2994,21 @@ function jIcon(g,k){const raw=atob(JI32[k]),d=new Uint8ClampedArray(raw.length);
 const JDM=new THREE.Object3D();let JM=null,jT=0;
 function jaaliInit(){JM=[];for(let k=0;k<4;k++){const img=new Image(),tx=new THREE.Texture(img);img.onload=function(){tx.needsUpdate=true;};img.src=JPNG[k];tx.anisotropy=4;
   const m=new THREE.InstancedMesh(new THREE.PlaneGeometry(1,1),new THREE.MeshLambertMaterial({map:tx,alphaTest:.45,side:THREE.DoubleSide}),2500);m.frustumCulled=false;m.count=0;scene.add(m);JM.push(m);}}
+// ---- Hopper: chest ke neeche hopper = upar ke chest ka saman neeche ke chest mein (har 0.4s mein 1 item) ----
+let hpT=0;
+function hopperSync(dt){
+  hpT-=dt;if(hpT>0)return;hpT=.4;
+  const L=D*W;
+  chests.forEach(function(c,k){
+    if(blocks[k]!==ID.chest||blocks[k-L]!==ID.hopper||k-2*L<0||blocks[k-2*L]!==ID.chest)return;
+    for(const i in c){
+      if(!(c[i]>0)){delete c[i];continue;}
+      let d=chests.get(k-2*L);if(!d){d={};chests.set(k-2*L,d);}
+      c[i]--;if(c[i]<=0)delete c[i];d[i]=(d[i]||0)+1;
+      if(chOpen===k||chOpen===k-2*L){try{renderChest(true);}catch(e){}}
+      break;}
+  });
+}
 function jaaliSync(dt){
   jT-=dt;if(jT>0)return;jT=.35;if(!JM)jaaliInit();
   const n=[0,0,0,0],R=26,px=Math.floor(P.x),py=Math.floor(P.y),pz=Math.floor(P.z);
@@ -3642,15 +3696,17 @@ function mobAI(a,dt){
 
 const chests=new Map();let chOpen=null;
 const chUI=document.getElementById('chestui'),chB=document.getElementById('chbody');
-function openChest(x,y,z){chOpen=idx(x,y,z);if(!chests.has(chOpen))chests.set(chOpen,{});renderChest();chUI.style.display='flex';try{if(document.pointerLockElement)document.exitPointerLock();}catch(e){}}
-function renderChest(){
+function openChest(x,y,z){chOpen=idx(x,y,z);chPrev={};if(!chests.has(chOpen))chests.set(chOpen,{});renderChest();chUI.style.display='flex';try{if(document.pointerLockElement)document.exitPointerLock();}catch(e){}}
+let chPrev={};
+function renderChest(q){
   const c=chests.get(chOpen),pl=[],ch=[];
   function stk(o,only){const r=[];for(const k in o){let q=o[k];if(!(q>0)||!BL[k]||(only&&!BL[k].item))continue;while(q>0){const m=Math.min(64,q);r.push([k,m]);q-=m;}}return r;}
   pl.push.apply(pl,stk(stock,true));ch.push.apply(ch,stk(c,false));
   chB.innerHTML='<div class="zt">📦 Chest (har box mein max 64, baaki agle box mein) — yahan kheench kar rakho</div><div id="chc" class="zn" data-zone="c"></div><div class="zt">🎒 Aapka saman — kheencho ya tap karo</div><div id="chp" class="zn" data-zone="p"></div>';
-  function fill(el,arr,z,tot){for(let i=0;i<tot;i++){const d=document.createElement('div');d.className='sl'+(arr[i]?' f':'');d.setAttribute('data-z',z);d.style.animationDelay=(Math.min(i,40)*14)+'ms';
+  function fill(el,arr,z,tot){for(let i=0;i<tot;i++){const d=document.createElement('div');d.className='sl'+(arr[i]?' f':'');d.setAttribute('data-z',z);if(q&&chPrev[z]&&chPrev[z][i]===(arr[i]?arr[i][0]+'':'')){d.style.animation='none';}else if(q){d.style.animationDuration='.45s';}else d.style.animationDelay=(Math.min(i,40)*14)+'ms';
     if(arr[i]){d.setAttribute('data-i',arr[i][0]);d.setAttribute('data-n',arr[i][1]);d.appendChild(icon(+arr[i][0]));const e=document.createElement('em');e.textContent=arr[i][1];d.appendChild(e);}
-    el.appendChild(d);}}
+    el.appendChild(d);}
+    chPrev[z]=[];for(let i=0;i<tot;i++)chPrev[z][i]=arr[i]?arr[i][0]+'':'';}
   fill(document.getElementById('chc'),ch,'c',Math.max(27,Math.ceil(ch.length/9)*9));fill(document.getElementById('chp'),pl,'p',Math.max(18,Math.ceil(pl.length/9)*9));
 }
 function moveItem(i,from,n){const c=chests.get(chOpen);if(from==='p'){const m=Math.min(n||1e9,stock[i]||0);c[i]=(c[i]||0)+m;stock[i]=(stock[i]||0)-m;}else{const m=Math.min(n||1e9,c[i]||0);stock[i]=(stock[i]||0)+m;c[i]=(c[i]||0)-m;}refreshHot();renderChest();}
@@ -6154,7 +6210,7 @@ MB.growTree=growTree;MB.SAPT=SAPT;MB.useBottle=useBottle;
 
 // ======================= MACHINE & BIJLI (redstone jaisa) =======================
 const MK={};BL.forEach(function(b,i){if(b&&b.ex&&b.ex.mach)MK[i]=b.ex.mach;});
-FLM[ID.vine]=true;FLM[ID.log_palm]=true;FLM[ID.leaves_palm]=true;FLM[ID.leaves_sakura]=true;TREEB[ID.log_palm]=true;TREEB[ID.leaves_palm]=true;TREEB[ID.leaves_sakura]=true;
+FLM[ID.vine]=true;['vine_fold','vine_pink','vine_yellow','vine_purple'].forEach(function(k){FLM[ID[k]]=true;});FLM[ID.log_palm]=true;FLM[ID.leaves_palm]=true;FLM[ID.leaves_sakura]=true;TREEB[ID.log_palm]=true;TREEB[ID.leaves_palm]=true;TREEB[ID.leaves_sakura]=true;
 LEAFC[ID.leaves_sakura]=0xff9fc4;LEAFC[ID.leaves_palm]=0x3f9a3f;
 const DEVS=[];let devScan=0,mechT=0,doorT={},timerT={},btnT={},pistBusy=0,elevUI=null,elevRide=null;
 const N6=[[1,0,0],[-1,0,0],[0,1,0],[0,-1,0],[0,0,1],[0,0,-1]];
@@ -6368,7 +6424,7 @@ function motorAnim(dt){
     if(!me){const kind=d[3]===ID.motor?'motor':(d[3]===ID.gear_l?'gear_l':'gear');me=build3D(kind);me.position.set(d[0]+.5,d[1],d[2]+.5);const dv0=GDRV[i];if(dv0&&dv0.dir<0)me.userData.spin.rotation.y=Math.PI/me.userData.n;scene.add(me);GDEC.set(i,me);}
     const dv=GDRV[i];if(dv&&gt-dv.t<.9)me.userData.spin.rotation.y+=dv.dir*dv.sp*dt;});
   GDEC.forEach(function(me,i){if(!alive.has(i)){scene.remove(me);GDEC.delete(i);}});
-  jaaliSync(dt);
+  jaaliSync(dt);hopperSync(dt);
   // glue ka halka peela nishan
   glvT-=dt;if(glvT<=0){glvT=.4;let n=0;
     GLUE.forEach(function(k){if(n>=150)return;const p=k.split(','),x=+p[0]-OX,y=+p[1],z=+p[2]-OZ;
