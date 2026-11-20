@@ -1342,7 +1342,8 @@ function sfx(k,gap){const n=performance.now();if(n-(SNL[k]||0)<(gap||90))return;
 ['pointerdown','pointerup','touchstart','touchend','keydown','click'].forEach(e=>addEventListener(e,()=>{sndInit();if(sac&&sac.state!=='running')sac.resume().then(bgmStart).catch(()=>{});else if(SNA.bgm&&SNA.bgm.paused)SNA.bgm.play().catch(()=>{});},{passive:true}));
 document.addEventListener('visibilitychange',()=>{if(sac){if(document.hidden)sac.suspend();else sac.resume();}else if(SNA.bgm){if(document.hidden)SNA.bgm.pause();else SNA.bgm.play().catch(()=>{});}});
 
-const rd=new T.WebGLRenderer({antialias:true});rd.setPixelRatio(Math.min(devicePixelRatio,/Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent)?1.5:2));
+const MAXC=10;   // har shop mein ek saath max 10 customers; koi jaye to naya aaye
+const rd=new T.WebGLRenderer({antialias:true,powerPreference:'high-performance'});rd.setPixelRatio(Math.min(devicePixelRatio,2));
 rd.shadowMap.enabled=true;rd.shadowMap.type=T.PCFSoftShadowMap;document.body.prepend(rd.domElement);
 const sc=new T.Scene();sc.background=new T.Color(0x86b567);rd.toneMapping=T.NoToneMapping;
 const cam=new T.OrthographicCamera(-1,1,1,-1,.1,120);
@@ -1354,7 +1355,7 @@ addEventListener('pointerdown',()=>{try{screen.orientation&&screen.orientation.l
 // WebGL context lost -> bahut baar black screen ka karan; recover
 rd.domElement.addEventListener('webglcontextlost',e=>{e.preventDefault();},false);rd.domElement.addEventListener('webglcontextrestored',()=>{location.reload();},false);
 sc.add(new T.HemisphereLight(0xfff6e6,0xc9a878,.5));
-const sun=new T.DirectionalLight(0xffedd0,.45);sun.castShadow=true;sun.shadow.bias=-.0005;sun.shadow.normalBias=.03;(()=>{const m=/Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent)?1024:2048;sun.shadow.mapSize.set(m,m);})();
+const sun=new T.DirectionalLight(0xffedd0,.45);sun.castShadow=true;sun.shadow.bias=-.0005;sun.shadow.normalBias=.03;(()=>{const m=/Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent)?1536:2048;sun.shadow.mapSize.set(m,m);})();
 Object.assign(sun.shadow.camera,{left:-18,right:18,top:18,bottom:-18,near:1,far:70});sun.shadow.radius=6;sc.add(sun,sun.target);const hl=new T.PointLight(0xffe2b0,.2,10,1.4);sc.add(hl);
 
 // ---------- textures ----------
@@ -1590,7 +1591,7 @@ function pcTint(g,o){const dm=[],cl=new Map(),V=(h,d)=>{if(h==null)return new T.
  g.userData.dm=dm;g.userData.col=col;}
 function pcDress(g,o){const u=g.userData,hw=new T.Group(),sw=new T.Group();hw.position.set(0,4.65,0);hw.scale.setScalar(3.4);sw.position.set(0,4.6,0);sw.scale.setScalar(3);
  if(o.cap!=null)hw.add(mkHat('cap',o.cap));
- else if(o.hat==='beanie'||o.hat==='cowboy')hw.add(mkHat(o.hat,o.hc));
+ else if(o.hat==='beanie'||o.hat==='cowboy'||o.hat==='chef')hw.add(mkHat(o.hat,o.hc));
  else if(o.hat==='antlers'){const b=MS(0x7a4a20);[-1,1].forEach(q=>{add(hw,new T.CylinderGeometry(.03,.04,.4,6),b,q*.2,.5,0).rotation.z=-q*.4;add(hw,new T.CylinderGeometry(.025,.03,.2,6),b,q*.33,.6,0).rotation.z=-q;});}
  else if(o.hat==='band')add(hw,new T.TorusGeometry(.355,.04,8,24),MS(o.hc),0,.12,0).rotation.x=Math.PI/2;
  if(o.glasses)sw.add(mkSpec('glasses'));
@@ -1610,15 +1611,21 @@ function mkChar(o){
  const sd=new T.Mesh(PC_SH.geometry,PC_SH.material);sd.rotation.x=-Math.PI/2;sd.position.y=.03;sd.renderOrder=-1;m.add(sd);
  const px=()=>new T.Group();
  g.userData={legs:[px(),px()],arms:[px(),px()],head:px(),torso:px(),ph:0,pc,rig:pcRig(m),pcMv:0,pcHold:false};
- pcTint(g,o.apron?{}:o);if(!o.apron)pcDress(g,o);   // hero/preview = model ke asli rang; baaki sab (customer/staff/delivery) apne rang + topi ke saath
+ pcTint(g,o.apron?{}:o);if(!o.apron)pcDress(g,o);
+ {const hl_=g.userData.hulls=[];m.traverse(q=>{if(q.isMesh&&q.material&&q.material.isMeshBasicMaterial&&q.material.side===T.BackSide)hl_.push(q);});g.userData.dm.forEach(e=>{if(e[1]===3)hl_.push(e[0]);});if(o.apron)g.userData.hulls=null;}   // hero/preview = model ke asli rang; baaki sab (customer/staff/delivery) apne rang + topi ke saath
  g.rotation.order='YXZ';PCS.push(g);return g;}
+const PCV3=new T.Vector3();let PCN=0,PCK=2,HLV=true,PATHB=2;
 function pcAll(dt){
- pcBoxes();
+ pcBoxes();let nv=0;{const q=0;HLV=true;PCK=2;}
  for(let i=PCS.length-1;i>=0;i--){const g=PCS[i],u=g.userData;
   if(!g.parent){if(u.pcOn)PCS.splice(i,1);continue;}u.pcOn=1;
   let dtc=dt;if(g!==hero&&u.pcInit){const F=window.CF,x0=g.position.x,z0=g.position.z;
-   if(F&&Math.hypot(x0-F.x,z0-F.z)>32){u.lx=x0;u.lz=z0;u.pcMv=0;u.acc=0;continue;}
-   if(PCS.length>10){u.acc=(u.acc||0)+dt;if(((window.FN|0)+i)&1)continue;dtc=u.acc;}}u.acc=0;u.pcInit=1;
+   if(F&&Math.hypot(x0-F.x,z0-F.z)>32){u.lx=x0;u.lz=z0;u.pcMv=0;u.acc=0;if(g.visible)g.visible=false;continue;}
+   if(g.parent===sc){PCV3.set(x0,1,z0).applyMatrix4(cam.matrixWorldInverse).applyMatrix4(cam.projectionMatrix);   // screen ke bahar wale log: na draw, na animate
+    if(!(Math.abs(PCV3.x)<1.25&&PCV3.y>-1.5&&PCV3.y<1.5)){u.lx=x0;u.lz=z0;u.pcMv=0;u.acc=0;if(g.visible)g.visible=false;continue;}}
+   if(!g.visible)g.visible=true;nv++;
+   if(u.hlOn!==HLV&&u.hulls){u.hlOn=HLV;for(let h=0;h<u.hulls.length;h++)u.hulls[h].visible=HLV;}
+   if(PCN>10){u.acc=(u.acc||0)+dt;if(((window.FN|0)+i)%PCK)continue;dtc=u.acc;}}u.acc=0;u.pcInit=1;
   const r=u.rig,mv=u.pcMv,A=u.arms,L=u.legs,H=u.head;
   const gx=g.position.x,gz=g.position.z;if(u.lx===undefined){u.lx=gx;u.lz=gz;u.vs=0;}
   if(dtc>.001){const sp=Math.hypot(gx-u.lx,gz-u.lz)/dtc;u.vs+=(sp-u.vs)*Math.min(1,dtc*12);}u.lx=gx;u.lz=gz;
@@ -1637,7 +1644,7 @@ function pcAll(dt){
    [u.hatG,u.specG,...(u.xs||[])].forEach(gr=>{if(gr)gr.traverse(q=>{if(q.isMesh&&q.material!==OLM){q.material.depthFunc=occ?T.AlwaysDepth:T.LessEqualDepth;q.renderOrder=occ?7:0;}});});}}
   if(u.dust&&mv){const sg=r.legR.rotation.x>0?1:-1;if(sg!==u.sg){u.sg=sg;const y=g.rotation.y;puff(g.position.x-Math.sin(y)*.18+R(-.1,.1),.08,g.position.z-Math.cos(y)*.18+R(-.1,.1),0xf5ead2,{vy:.35,s:.32,life:.38,grow:1.4,vx:R(-.25,.25),vz:R(-.25,.25)});}}
   else if(!mv)u.sg=0;
-  u.pcMv=0;}}
+  u.pcMv=0;}PCN=nv;}
 function idle(g,dt,hold){const u=g.userData,i=u.id||(u.id={n:R(.3,3),k:-1,t:0,d:1,ph:R(0,6)});i.n-=dt;i.t+=dt;
  if(i.n<=0){i.n=R(2,4.5);i.t=0;i.d=R(1.2,2.2);i.k=i.k===-1?(Math.random()*6|0):-1;if(hold&&(i.k===1||i.k===2||i.k===3))i.k=0;}
  const br=Math.sin(u.t*2.6+i.ph),e=i.k<0?0:Math.sin(Math.min(1,i.t/i.d)*Math.PI),A=u.arms;u.torso.scale.y=1+br*.03;
@@ -1772,7 +1779,41 @@ const up=e=>{if(e.pointerId!==jid)return;jid=null;jx=jy=0;joy.style.display='non
 const npcs=[],snpcs=[];
 const CS=[4.8,-2.4],heroCash=()=>Math.hypot(hero.position.x-CS[0],hero.position.z-CS[1])<1.6,npcCash=()=>npcs.some(n=>n.st==='cash'&&Math.hypot(n.g.position.x-CS[0],n.g.position.z-CS[1])<.8),cashierHere=()=>heroCash()||npcCash(),custWait=()=>queue.some(c=>Math.hypot(c.g.position.x-4.8,c.g.position.z-.1)<.3);
 const UNI={b:0xd93a2b,c:0x7a4a2e,j:0x16a89a,i:0xf06ea0,f:0xe8b30c,p:0x7e4ac8,s2:0x4f9a2a,m:0x8a1c3c};
-function mkNpc(ix,q){const uc=q&&UNI[q.id]!==undefined?UNI[q.id]:null;const g=mkChar({shirt:uc!==null?uc:0x1e88ff,pants:uc!==null?0x23262e:0x1b2547,cap:uc!==null?uc:0x0a84ff,skin:[0xc98a62,0xe0aa82,0x8a5a3c,0xd9a07a][ix%4]});g.scale.setScalar(.95);g.position.set(1.6+ix*.9,0,-2.6);sc.add(g);return{g,ix,lv:0,cs:0,ss:0,zs:0,st:'idle',hold:0,items:[],boxes:[],fl:0,lk:new Set(),role:['cash','carry','pack','clean'][ix%4]};}
+// ---- staff uniforms: har role ke alag kapde (Cashier / Carry / Packing / Safai) ----
+const ROLE_MAIN=['cash','carry','pack','clean'],ROLE_SHOP=['cash','carry','clean','carry'],RGC={};
+const rgg=(k,f)=>RGC[k]||(RGC[k]=f());
+const cMix=(h,w)=>new T.Color(h).lerp(new T.Color(0xffffff),w).getHex(),cDark=(h,k)=>new T.Color(h).multiplyScalar(k).getHex();
+function roleLook(role,b,ix){   // har shop ke brand colour se uske staff ke rang alag
+ if(role==='cash')return{shirt:cMix(b,.72),pants:cDark(b,.28),shoe:0x15151a,cap:b};
+ if(role==='carry')return{shirt:b,pants:cDark(b,.3),shoe:0x6b4a2a,cap:ix>2?cDark(b,.65):cMix(b,.25)};
+ if(role==='pack')return{shirt:0xf6f6f2,pants:cDark(b,.4),shoe:0x1b1b1f,hat:'chef'};
+ return{shirt:cMix(b,.5),pants:cDark(b,.6),shoe:0xf3f3f3,cap:b};
+}
+function roleGear(g,role,b,ix){const u=g.userData;if(!u.rig)return;const G=new T.Group();u.rig.upper.add(G);
+ const bx=(w,h,d)=>rgg('b'+w+'_'+h+'_'+d,()=>new T.BoxGeometry(w,h,d)),sp=(r)=>rgg('s'+r,()=>new T.SphereGeometry(r,10,8)),
+  ring=()=>rgg('ring',()=>new T.CylinderGeometry(1,1,1,18,1,true));
+ const A=(geo,c,x,y,z,sx,sy,sz,o)=>{const m=new T.Mesh(geo,MS(c,o||{roughness:.6}));m.position.set(x,y,z);if(sx!==undefined)m.scale.set(sx,sy,sz);G.add(m);return m;};
+ const zs=y=>Math.max(.62*Math.sqrt(Math.max(0,1-Math.pow((y-2.95)/.85,2))),.55*Math.sqrt(Math.max(0,1-Math.pow((y-2.25)/.8,2))));   // dhaad ka aage ka ubhar
+ if(role==='cash'){
+  [-1,1].forEach(q=>{const w=A(bx(.32,.1,.07),0xffffff,q*.2,3.24,.625);w.rotation.z=q*.6;});                 // collar
+  A(bx(.2,.17,.11),b,0,3.15,.665);A(bx(.17,.82,.07),b,0,2.62,.69);                                            // brand tie
+  A(bx(.16,.1,.05),0xf2c014,.34,2.9,.6,undefined,undefined,undefined,{roughness:.4});}                        // naam ka badge
+ else if(role==='carry'){
+  const vc=ix>2?0xff7a1a:0xc6f21a;
+  A(rgg('sph',()=>new T.SphereGeometry(1,16,12)),vc,0,2.6,0,.8,.85,.69);                                      // hi-vis vest
+  [2.82,2.4].forEach(y=>{const k=(y-2.6)/.85,f=Math.sqrt(1-k*k);A(ring(),0xe8ecef,0,y,0,.8*f*1.02,.09,.69*f*1.02);});}   // chandi reflective patti
+ else if(role==='pack'){
+  [-1,1].forEach(q=>[2.9,2.62,2.34,2.06].forEach(y=>A(sp(.045),0x15151a,q*.1,y,zs(y)+.015)));                // double-breasted buttons
+  A(bx(.62,.07,.05),0xd9d9d4,0,3.18,.62);                                                                      // gale ka kapda
+  A(bx(.2,.2,.06),b,-.38,2.95,.55);}                                                                    // chhota laal rumaal
+ else{const dk=cDark(b,.6);
+  A(bx(.56,.78,.05),dk,0,2.55,.64);                                                                      // dungaree bib
+  [-1,1].forEach(q=>{const st=A(bx(.1,.62,.05),dk,q*.25,3.1,.62);st.rotation.z=-q*.12;});                // straps
+  A(bx(.22,.16,.06),0xf2c200,0,2.62,.69);                                                                      // jeb
+  A(sp(.045),0xf2c200,-.25,2.82,.665);A(sp(.045),0xf2c200,.25,2.82,.665);}                                     // buttons
+ G.traverse(q=>{q.castShadow=false;q.receiveShadow=false;});
+ u.xs=u.xs||[];u.xs.push(G);}
+function mkNpc(ix,q){const uc=q&&UNI[q.id]!==undefined?UNI[q.id]:0x1e88ff,role=q?ROLE_SHOP[ix%4]:ROLE_MAIN[ix%4],L=roleLook(role,uc,ix);const g=mkChar(Object.assign({skin:[0xc98a62,0xe0aa82,0x8a5a3c,0xd9a07a][ix%4]},L));roleGear(g,role,uc,ix);g.scale.setScalar(.95);g.position.set(1.6+ix*.9,0,-2.6);sc.add(g);return{g,ix,lv:0,cs:0,ss:0,zs:0,st:'idle',hold:0,items:[],boxes:[],fl:0,lk:new Set(),role:role};}
 const nearBin=(x,z)=>BINS.filter(b=>b.g.visible&&!b.sh).sort((a,b)=>Math.hypot(a[0]-x,a[1]-z)-Math.hypot(b[0]-x,b[1]-z))[0];
 
 // ---- staff pathfinding: tables / machines ke aar-paar nahi, ghoom ke jaate hain ----
@@ -1805,7 +1846,7 @@ function npcPath(x0,z0,x1,z1){
  return search(.22)||search(0)||[[x1,z1]];}
 function npcGo(c,tx,tz,dt,sp){c.tg=[tx,tz];_psh=c.sh||null;
  const p=c.g.position,k=tx.toFixed(2)+','+tz.toFixed(2)+','+blocks.length+','+Math.round(sh.x1)+','+Math.round(sh.z1)+(c.sh?c.sh.id+c.sh.T.filter(t=>t.own).length+c.sh.M.filter(m=>m.own).length:'');
- if(c.pk!==k||!c.pp){c.pk=k;c.pp=npcPath(p.x,p.z,tx,tz);}
+ if(c.pk!==k||!c.pp){if(PATHB>0){PATHB--;c.pk=k;c.pp=npcPath(p.x,p.z,tx,tz);}else if(!c.pp)c.pp=[[tx,tz]];}
  while(c.pp.length>1&&Math.hypot(c.pp[0][0]-p.x,c.pp[0][1]-p.z)<.1)c.pp.shift();
  if(c.pp.length>1){stepTo(c,c.pp[0][0],c.pp[0][1],dt,sp);return false;}
  const ox=p.x,oz=p.z,r=stepTo(c,tx,tz,dt,sp);
@@ -2126,7 +2167,7 @@ let camK=0;try{camK=(+localStorage.getItem('pst_cam')||0)%4;}catch(e){}
 const CAMO=[[-9,-9],[-9,9],[9,9],[9,-9]];
 {const b=document.createElement('div');b.className='btn';b.innerHTML='<img src="'+UI.cam+'">';b.classList.add('rb');b.style.cssText='position:fixed;right:14px;bottom:14px;width:38px;height:38px;border-radius:50%;background:radial-gradient(circle at 35% 22%,var(--ui-main),var(--ui-main2));border:3px solid var(--ui-edge);box-shadow:0 0 0 2.5px var(--ui-dark),0 4px 6px #0007,inset 0 3px 0 #ffffff66;font-size:17px;display:flex;align-items:center;justify-content:center;z-index:30;cursor:pointer;user-select:none';b.addEventListener('pointerdown',e=>{e.stopPropagation();camK=(camK+1)%4;try{localStorage.setItem('pst_cam',camK);}catch(e){}});document.body.appendChild(b);}
 let dtS=.0167;function frame(){requestAnimationFrame(frame);const rawD=clock.getDelta();window.FN=(window.FN|0)+1;dtS+=(Math.min(rawD,.05)-dtS)*.3;
- {const a=window.AQ||(window.AQ={f:.0167,pr:rd.getPixelRatio(),t:0});a.f+=(Math.min(rawD,.1)-a.f)*.05;a.t+=rawD;if(a.t>1.2){a.t=0;const hi=Math.min(devicePixelRatio,/Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent)?1.5:2);let np=a.pr;if(a.f>.024&&np>.7)np=Math.max(.7,np-.25);else if(a.f<.0185&&np<hi)np=Math.min(hi,np+.25);if(np!==a.pr){a.pr=np;rd.setPixelRatio(np);}}}
+ PATHB=2;const away=!!shpIn(hero.position);
  const dt0=dtS,dt=(uiOpen||modal||window.LOADING||window.LAND)?0:dt0,P=hero.position;
  if(window.LOADING&&++window.LF>=24&&performance.now()-window.LT0>1600&&document.readyState==='complete')window.hideLoad();
  // move
@@ -2172,9 +2213,9 @@ let dtS=.0167;function frame(){requestAnimationFrame(frame);const rawD=clock.get
   if(it){dropT=.18;sfx('place',110);vib(32);const a=new T.Vector3();it.getWorldPosition(a);gp.remove(it);it.position.copy(a);it.rotation.set(0,0,0);it.scale.setScalar(hero.scale.x);sc.add(it);trs.push({w:it,a,b:new T.Vector3(bn[0],1.0,bn[1]),t:0,bn});}}
  // put pizza on counter 2
  giveT-=dt;if(giveT<=0&&carried.length&&disp.length<dslots.length&&Math.hypot(P.x-DZ[0],P.z-DZ[1])<1.2){giveT=.35;sfx('place',110);const p=carried.pop(),a=new T.Vector3();p.getWorldPosition(a);stack.remove(p);p.position.copy(a);p.scale.setScalar(hero.scale.x);sc.add(p);p.userData.gv={t:0,a};disp.push(p);stackBump=.6;}
- delTick(dt,P);SHP.forEach(q=>q.tick(dt,P));
+ delTick(dt,P);{const hs=shpIn(P);SHP.forEach((q,k)=>{if(q===hs){q.tick(dt,P);q.ta=0;}else{q.ta=(q.ta||0)+dt;if(((window.FN|0)+k)%4===0){q.tick(Math.min(q.ta,.15),P);q.ta=0;}}});}
  // patience, rating, rush hour
- [queue,q2].forEach(L=>{for(let i=L.length-1;i>=0;i--){const c=L[i];c.pl-=dt;drawPb(c);if(c.pl<=0){L.splice(i,1);walkOut(c);}}});
+ [queue,q2].forEach(L=>{for(let i=L.length-1;i>=0;i--){const c=L[i];if(!(away&&!npcs.length))c.pl-=dt;drawPb(c);if(c.pl<=0){L.splice(i,1);walkOut(c);}}});
  coolT-=dt;{const st=stars();if(st>lastSt){lastSt=st;hud();}
   if(st===5){if(rushT>0){rushT-=dt;if(rushT<=0){rushT=0;hud();}}else{rushNext-=dt;if(rushNext<=0){rushT=22;rushNext=60;toast('🔥 RUSH HOUR! Dher saare customers aa rahe hain!');hud();}}}}
  // counter 1: take money
@@ -2199,8 +2240,8 @@ let dtS=.0167;function frame(){requestAnimationFrame(frame);const rawD=clock.get
   else if(c.st==='sit'){c.t+=dt;const k=Math.min(1,c.t*4),e=Math.abs(Math.sin(c.t*5)),on=c.t>.3?1:0;c.g.position.y=.12*k;u.legs.forEach(l=>l.rotation.x=-1.45*k);u.arms[0].rotation.x=-1.1-e*.5*on;u.arms[1].rotation.x=-1.1-(1-e)*.5*on;u.head.rotation.x=Math.sin(c.t*5)*.08;c.pz.scale.setScalar(Math.max(.2,1-c.t/EAT));
    if(c.t>EAT){const s=c.seat;sc.remove(c.pz);{const w=mkWaste();w.position.set(c.seat.px,.68,c.seat.pz);sc.add(w);c.seat.trash=w;}u.legs.forEach(l=>l.rotation.x=0);u.head.rotation.x=0;c.g.position.y=0;s.busy=0;c.st='leave';c.path=[[s.x,s.zb],[6.6,s.zb],[6.6,sh.z1+3]];addXp(1);}}
   else{const t=c.path[0];if(stepTo(c,t[0],t[1],dt,3)){c.path.shift();if(!c.path.length){sc.remove(c.g);outs.splice(i,1);}}}}
- vipT-=dt;if(vipT<=0){vipT=VIP_EVERY;spawnVip();}
- spawnT+=dt;if(spawnT>(rushT>0?.7:Math.max(.8,Math.max(1.8,8-1.5*(rating-1))/lvF())*(coolT>0?2.5:1))&&queue.length<(rushT>0?10:Math.round(2+rating*1.2)+lvQ())&&q2.length<(rushT>0?8:Math.min(6+lvQ(),2+Math.floor(rating)+lvQ()))){spawnT=0;spawn();}
+ vipT-=dt;if(vipT<=0){vipT=VIP_EVERY;if(queue.length+q2.length+outs.length<(away?5:10))spawnVip();}
+ spawnT+=dt;if(queue.length+q2.length+outs.length<(away?5:10)&&spawnT>(rushT>0?.7:Math.max(.8,Math.max(1.8,8-1.5*(rating-1))/lvF())*(coolT>0?2.5:1))&&queue.length<(rushT>0?10:Math.round(2+rating*1.2)+lvQ())&&q2.length<(rushT>0?8:Math.min(6+lvQ(),2+Math.floor(rating)+lvQ()))){spawnT=0;spawn();}
  // unlock pad
  // pads: cash flows in while standing, progress fills, then it unlocks
  {const nx=tabs.find(q=>!q.own);{let X=8.6,Z=14;tabs.forEach(t=>{if(t.own||t===nx){X=Math.max(X,t.x+3.4);Z=Math.max(Z,t.z+4);}});sh.tx=Math.min(20,X);sh.tz=Z;const k=Math.min(1,dt*2);sh.x1+=(sh.tx-sh.x1)*k;sh.z1+=(sh.tz-sh.z1)*k;if(Math.abs(sh.tx-sh.x1)<.01)sh.x1=sh.tx;if(Math.abs(sh.tz-sh.z1)<.01)sh.z1=sh.tz;applyShop();{const B1=BINS[1];B1[0]=sh.x1-.9;B1.g.position.x=B1[0];B1.g.visible=sh.x1>12.5;BINS[0].g.visible=true;bB1[0]=B1.g.visible?B1[0]-.5:0;bB1[1]=B1.g.visible?B1[0]+.5:0;}}
@@ -2221,7 +2262,7 @@ let dtS=.0167;function frame(){requestAnimationFrame(frame);const rawD=clock.get
  pcAll(dt);vipFx(dt);
  if(uiOpen){pcLight(1);pchar.rotation.y=Math.sin(tm*1.6)*.45;pchar.userData.arms[1].rotation.x=Math.sin(tm*3)*.2;prd.render(psc,pcam);}
   if(modal==='set'&&cuOn){pcLight(1);pchar.rotation.y=Math.sin(tm*1.4)*.7+.2;prd.render(psc,pcam);const cc=$('cprev');if(cc){const x=cc.getContext('2d');x.clearRect(0,0,cc.width,cc.height);x.drawImage(prd.domElement,0,0,cc.width,cc.height);}}
- npcs.forEach(c=>workAI(c,dt));snpcs.forEach(c=>shAI(c,dt));npcSep(dt);
+ npcs.forEach(c=>workAI(c,dt));snpcs.forEach((c,k)=>{if(shpIn(P)===c.sh)shAI(c,dt);else{c.ta=(c.ta||0)+dt;if(((window.FN|0)+k)%3===0){shAI(c,Math.min(c.ta,.12));c.ta=0;}}});npcSep(dt);
  // camera
  hl.position.set(P.x,3.2,P.z);{const o=CAMO[camK],F=window.CF||(window.CF={x:P.x,z:P.z}),fo=F.fx!==undefined,k=1-Math.exp(-dt0*(fo?4:14)),tx=fo?F.fx:P.x,tz=fo?F.fz:P.z;F.x+=(tx-F.x)*k;F.z+=(tz-F.z)*k;cam.position.set(F.x+o[0],11.5,F.z+o[1]);cam.lookAt(F.x,0,F.z);{const dx=o[0]*.67,dy=18,dz=o[1]*.45,L=Math.hypot(dx,dy,dz),fx=dx/L,fy=dy/L,fz=dz/L;
   let rx=fz,ry=0,rz=-fx;const rl=Math.hypot(rx,rz)||1;rx/=rl;rz/=rl;
@@ -2324,10 +2365,10 @@ function mkShp(c){const S=Object.assign({own:false,paid:0,q:[],q2:[],o:[],car:[]
  S.leave=(c,angry)=>{const i=S.q.indexOf(c);if(i>=0)S.q.splice(i,1);const i2=S.q2.indexOf(c);if(i2>=0)S.q2.splice(i2,1);if(angry&&c.paid){const r=c.amt,fp=Math.min(S.pend,r);S.pend-=fp;money=Math.max(0,money-(r-fp));pop(wp(c.g,2.4),'-'+r,'#ff6b6b');hud();}c.bub.visible=c.pbar.visible=false;if(angry){vib(60);pop(wp(c.g,2.6),'😠','#fff');}
   const s=angry?null:S.seats.find(q=>!q.busy&&!q.trash);if(s){s.busy=1;c.seat=s;c.pth=[[X,GA[s.row]],[s.x,GA[s.row]],[s.x,s.z]];c.st='seat';}else{c.pth=[[X,24]];c.st='leave';}S.o.push(c);};
  S.serve=c=>{sfx('collect',200);vib([35,25,55]);pop(wp(c.g,2.8),'😋','#fff');addXp(c.need*S.xp);confetti(c.g.position.x,c.g.position.z);hud();S.leave(c,0);};
- S.tick=(dt,P)=>{if(shpIn(P)!==S&&!(S.own&&snpcs.some(n=>n.sh===S)))return;
+ S.tick=(dt,P)=>{if(!S.own&&shpIn(P)!==S)return;
   if(!S.own){const pre=!S.prev||S.prev.done(),ok=level>=S.lv&&pre,on=inZ(P,X,9.5,1.1,.8);S.tt-=dt;if(on&&level>=S.lv&&!pre&&S.tt<=0){S.tt=3;toast('Pehle '+S.prev.short+' poori complete karo (sab machine L4 + saari tables)');}
    padRun(S,'pad','paid',S.cost,2.2,1.6,{icon:icBox,lvl:S.lv,okL:ok},ok&&on,dt,()=>S.unlock());return;}
-  const cap=capP[SELF[0].lv],nT=S.T.filter(t=>t.own).length;
+  const att=shpIn(P)===S||snpcs.some(n=>n.sh===S),cap=capP[SELF[0].lv],nT=S.T.filter(t=>t.own).length;
   S.M.forEach(m=>{if(!m.pad)return;const ok=m.own||level>=m.lv;m.pad.visible=m.own||level>=m.lv-2;
    if(!m.own)padRun(m,'pad','paid',m.cost,2.2,1.6,{icon:icMach,lvl:m.lv,okL:ok},ok&&inZ(P,m.x,m.z,1.1,.8),dt,()=>{S.ownM(m);P.x=m.rx;P.z=m.rz;toast('✅ '+m.n+' unlock!');});
    else padRun(m,'pad','paid',m.up[m.lvl],2.2,1.6,{icon:icUp(m.lvl+2),lvl:m.lv,okL:true},inZ(P,m.ux,m.z,1.1,.8),dt,()=>{m.lvl++;S.buildM(m);S.afterM(m);toast('⬆ '+m.n+' Level '+m.lvl);});});
@@ -2338,9 +2379,9 @@ function mkShp(c){const S=Object.assign({own:false,paid:0,q:[],q2:[],o:[],car:[]
    m.items.forEach(f=>{if(f.userData.pp<1){f.userData.pp=Math.min(1,f.userData.pp+dt*4);f.scale.setScalar(f.userData.pp);}});
    if(S.tk<=0&&S.car.length<cap&&!boxCar.length&&m.items.length&&Math.hypot(P.x-m.rx,P.z-m.rz)<1.15){S.tk=.2;const f=m.items.pop();m.ig.remove(f);f.scale.setScalar(1);f.position.set(0,S.car.length*.17,0);S.st.add(f);S.car.push(f);sfx('pick',110);}});
   S.tk-=dt;S.gv-=dt;
-  S.sp-=dt;if(S.sp<=0&&S.q.length<4+Math.min(3,level/80|0)&&S.q2.length<4+Math.min(3,level/80|0)&&S.M[0].own){S.sp=Math.max(1.5,Math.max(3,13-nT*.7-(S.M[1].own?2:0))/lvF());S.q.push(S.cust());}
+  S.sp-=dt;if(S.sp<=0&&S.q.length<4+Math.min(3,level/80|0)&&S.q2.length<4+Math.min(3,level/80|0)&&S.q.length+S.q2.length+S.o.length<(shpIn(P)===S?10:5)&&S.M[0].own){S.sp=Math.max(1.5,Math.max(3,13-nT*.7-(S.M[1].own?2:0))/lvF());S.q.push(S.cust());}
   [[S.q,S.CA.x],[S.q2,S.SR.x]].forEach(L=>{for(let i=0;i<L[0].length;i++){const c=L[0][i];c.arr=stepTo(c,L[1],1.1+i*.95,dt,2.6);
-   if(c.arr){c.g.rotation.y=Math.PI;c.bub.visible=c.pbar.visible=true;c.pl-=dt;drawPb(c);if(c.pl<=0){S.leave(c,1);i--;}}}});
+   if(c.arr){c.g.rotation.y=Math.PI;c.bub.visible=c.pbar.visible=true;if(att)c.pl-=dt;drawPb(c);if(c.pl<=0){S.leave(c,1);i--;}}}});
   // counter 1: customer paisa deta hai (PAISA counter ke peeche khade ho) -> paisa ka dher
   {const f=S.q[0],cashier=Math.hypot(P.x-S.CA.x,P.z-S.CA.z)<1.6||shNpcCash(S);
    if(f&&f.arr){if(!cashier&&!S.hn&&shpIn(P)===S){S.hn=1;toast('\u{1F4B5} PAISA counter ke peeche (peela ring) jao \u2014 tabhi customer paisa dega!');}
