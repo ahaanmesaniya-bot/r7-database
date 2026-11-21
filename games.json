@@ -77,6 +77,19 @@
       "hidden": false,
       "new": false,
       "v": 1795160976903
+    },
+    {
+      "id": "item_1795235863539",
+      "title": "Water Sort",
+      "logo": "https://res.cloudinary.com/so9phvfy/image/upload/v1795235807/r7-mwpx1pgu.webp",
+      "hero": "https://res.cloudinary.com/so9phvfy/image/upload/v1795235817/r7-mwpx1xci.webp",
+      "featured": true,
+      "type": "Puzzle",
+      "url": "https://ahaanmesaniya-bot.github.io/r7-database/games/water-sort-mwpx22zx.html",
+      "openDirect": false,
+      "openInNewTab": false,
+      "hidden": false,
+      "new": false
     }
   ],
   "aboutUs": "ફધબધધબધભ",
