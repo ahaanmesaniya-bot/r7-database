@@ -77,7 +77,13 @@
       "hidden": false,
       "new": false,
       "v": 1795160976903,
-      "packVersion": 2
+      "packVersion": 3,
+      "pack": {
+        "url": "https://ahaanmesaniya-bot.github.io/r7-database/packs/item_1795010564066-v3-mx00ao7v.zip",
+        "version": 3,
+        "size": 923756,
+        "sha256": "fa330a0a9b32ed66200b064e661f7877e6b8139cd612976b250a04d74c082258"
+      }
     },
     {
       "id": "item_1795235863539",
