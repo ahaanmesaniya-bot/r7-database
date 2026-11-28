@@ -96,7 +96,14 @@
       "openDirect": false,
       "openInNewTab": false,
       "hidden": false,
-      "new": false
+      "new": false,
+      "pack": {
+        "url": "https://ahaanmesaniya-bot.github.io/r7-database/packs/item_1795235863539-v1-mx003fou.zip",
+        "version": 1,
+        "size": 217927,
+        "sha256": "eb2176184a8cffb9c9163914c03b7ef72803f655a9fee195d634e7ba9557da2f"
+      },
+      "packVersion": 1
     },
     {
       "id": "item_1795354477717",
